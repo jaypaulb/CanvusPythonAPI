@@ -2,7 +2,7 @@
 Core implementation of the Canvus API client.
 """
 
-from typing import Optional, Dict, Any, List, Type, TypeVar, Union
+from typing import Optional, Dict, Any, List, Type, TypeVar, Union, AsyncGenerator, Callable
 import json
 import httpx
 from pydantic import BaseModel, ValidationError
@@ -68,7 +68,8 @@ class CanvusClient:
         json_data: Optional[Dict[str, Any]] = None,
         data: Optional[Dict[str, Any]] = None,
         headers: Optional[Dict[str, Any]] = None,
-        return_binary: bool = False
+        return_binary: bool = False,
+        stream: bool = False
     ) -> Any:
         """Make a request to the API."""
         url = self._build_url(endpoint)
@@ -109,6 +110,9 @@ class CanvusClient:
                 if return_binary:
                     return await response.read()
 
+                if stream:
+                    return response  # Return the response object for streaming
+
                 text = await response.text()
                 if not text:
                     data = None
@@ -133,6 +137,73 @@ class CanvusClient:
                             status_code=500
                         )
                 return data
+
+    async def subscribe(
+        self,
+        endpoint: str,
+        *,
+        response_model: Optional[Type[T]] = None,
+        params: Optional[Dict[str, Any]] = None,
+        callback: Optional[Callable[[Union[T, Dict[str, Any]]], None]] = None
+    ) -> AsyncGenerator[Union[T, Dict[str, Any]], None]:
+        """Subscribe to a streaming endpoint.
+        
+        Args:
+            endpoint (str): The API endpoint to subscribe to
+            response_model (Type[T], optional): Pydantic model for response validation
+            params (Dict[str, Any], optional): Query parameters
+            callback (Callable, optional): Callback function for processing updates
+            
+        Yields:
+            Union[T, Dict[str, Any]]: Stream of updates from the endpoint
+        """
+        # Add subscribe=true to params
+        params = params or {}
+        params["subscribe"] = "true"
+        
+        # Make streaming request
+        response = await self._request(
+            "GET",
+            endpoint,
+            params=params,
+            stream=True
+        )
+        
+        try:
+            # Process the stream
+            async for line in response.content:
+                if not line:
+                    continue
+                    
+                try:
+                    # Parse JSON data
+                    data = json.loads(line)
+                    
+                    # Validate with model if provided
+                    if response_model:
+                        result = response_model.model_validate(data)
+                    else:
+                        result = data
+                        
+                    # Call callback if provided
+                    if callback:
+                        callback(result)
+                        
+                    yield result
+                        
+                except json.JSONDecodeError as e:
+                    print(f"Failed to parse JSON from stream: {e}")
+                    continue
+                except ValidationError as e:
+                    print(f"Failed to validate stream data: {e}")
+                    continue
+                except Exception as e:
+                    print(f"Error processing stream data: {e}")
+                    continue
+                    
+        finally:
+            # Ensure response is closed
+            await response.release()
 
     # Server Operations
     async def get_server_info(self) -> ServerInfo:
@@ -1006,3 +1077,84 @@ class CanvusClient:
         except Exception as e:
             print(f"Error finding admin client: {e}")
             return None
+
+    # Subscription Methods
+    async def subscribe_widgets(
+        self,
+        canvas_id: str,
+        callback: Optional[Callable[[Union[Note, Image, Browser, Video, PDF, Widget]], None]] = None
+    ) -> AsyncGenerator[Union[Note, Image, Browser, Video, PDF, Widget], None]:
+        """Subscribe to updates for all widgets in a canvas.
+        
+        Args:
+            canvas_id (str): The ID of the canvas to monitor widgets for
+            callback (Callable, optional): Function to call for each widget update
+            
+        Yields:
+            Union[Note, Image, Browser, Video, PDF, Widget]: Stream of widget updates
+        """
+        async for update in self.subscribe(
+            f"canvases/{canvas_id}/widgets",
+            params={"subscribe": "true"},
+            callback=callback
+        ):
+            # Determine widget type and validate accordingly
+            widget_type = update.get("type")
+            if widget_type == "note":
+                yield Note.model_validate(update)
+            elif widget_type == "image":
+                yield Image.model_validate(update)
+            elif widget_type == "browser":
+                yield Browser.model_validate(update)
+            elif widget_type == "video":
+                yield Video.model_validate(update)
+            elif widget_type == "pdf":
+                yield PDF.model_validate(update)
+            else:
+                yield Widget.model_validate(update)
+
+    async def subscribe_workspace(
+        self,
+        client_id: str,
+        workspace_index: int,
+        callback: Optional[Callable[[Workspace], None]] = None
+    ) -> AsyncGenerator[Workspace, None]:
+        """Subscribe to updates for a specific workspace.
+        
+        Args:
+            client_id (str): The ID of the client
+            workspace_index (int): The index of the workspace
+            callback (Callable, optional): Function to call for each update
+            
+        Yields:
+            Workspace: Stream of workspace updates
+        """
+        async for update in self.subscribe(
+            f"clients/{client_id}/workspaces/{workspace_index}",
+            response_model=Workspace,
+            callback=callback
+        ):
+            yield update
+
+    async def subscribe_note(
+        self,
+        canvas_id: str,
+        note_id: str,
+        callback: Optional[Callable[[Note], None]] = None
+    ) -> AsyncGenerator[Note, None]:
+        """Subscribe to updates for a specific note.
+        
+        Args:
+            canvas_id (str): The ID of the canvas containing the note
+            note_id (str): The ID of the note to subscribe to
+            callback (Callable, optional): Function to call for each update
+            
+        Yields:
+            Note: Stream of note updates
+        """
+        async for update in self.subscribe(
+            f"canvases/{canvas_id}/notes/{note_id}",
+            response_model=Note,
+            callback=callback
+        ):
+            yield update

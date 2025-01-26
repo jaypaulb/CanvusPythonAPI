@@ -57,6 +57,92 @@ Example `payloads/create_canvas.json`:
 }
 ```
 
+## Subscribing to Updates
+
+### Widget Updates
+
+```python
+async def handle_widget_update(widget):
+    """Handle widget update events."""
+    print(f"Widget type: {widget.__class__.__name__}")
+    if hasattr(widget, 'content'):
+        print(f"Content: {widget.content}")  # For notes
+    if hasattr(widget, 'url'):
+        print(f"URL: {widget.url}")  # For browsers
+    print(f"Location: ({widget.location.x}, {widget.location.y})")
+
+# Subscribe to all widget updates in a canvas
+async for widget in client.subscribe_widgets("canvas-id", callback=handle_widget_update):
+    # Process widget updates as they arrive
+    print(f"Received update for widget: {widget.id}")
+```
+
+### Note Updates
+
+```python
+async def handle_note_update(note):
+    """Handle note update events."""
+    print(f"Note content: {note.content}")
+    print(f"Location: ({note.location.x}, {note.location.y})")
+    print(f"Background color: {note.background_color}")
+
+# Subscribe to updates for a specific note
+async for note in client.subscribe_note("canvas-id", "note-id", callback=handle_note_update):
+    # Process note updates as they arrive
+    print(f"Received update for note: {note.id}")
+```
+
+### Workspace Updates
+
+```python
+async def handle_workspace_update(update):
+    """Handle workspace update events."""
+    print(f"Workspace updated: {update.workspace_name}")
+    print(f"View rectangle: {update.view_rectangle}")
+
+# Subscribe to workspace updates
+async for update in client.subscribe_workspace(
+    "client-id",
+    workspace_index=0,
+    callback=handle_workspace_update
+):
+    # Process updates as they arrive
+    print(f"Received update for workspace: {update.workspace_name}")
+```
+
+### Using Multiple Subscriptions
+
+```python
+import asyncio
+
+async def monitor_widgets(client, canvas_id):
+    """Monitor all widget updates in a canvas."""
+    async for widget in client.subscribe_widgets(canvas_id):
+        print(f"Widget {widget.id} updated: {widget}")
+
+async def monitor_note(client, canvas_id, note_id):
+    """Monitor updates for a specific note."""
+    async for note in client.subscribe_note(canvas_id, note_id):
+        print(f"Note {note_id} updated: {note.content}")
+
+async def monitor_workspace(client, client_id, workspace_index):
+    """Monitor updates for a specific workspace."""
+    async for update in client.subscribe_workspace(client_id, workspace_index):
+        print(f"Workspace {workspace_index} updated: {update}")
+
+async def main():
+    async with CanvusClient(...) as client:
+        # Start multiple subscriptions concurrently
+        await asyncio.gather(
+            monitor_widgets(client, "canvas-1"),
+            monitor_note(client, "canvas-1", "note-1"),
+            monitor_workspace(client, "client-1", 0)
+        )
+
+# Run the monitoring tasks
+asyncio.run(main())
+```
+
 ## Error Handling
 
 All examples should include error handling:
