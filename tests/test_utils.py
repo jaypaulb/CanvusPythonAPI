@@ -6,9 +6,14 @@ from colorama import init, Fore, Style
 from pathlib import Path
 import json
 from typing import Dict, Any
+from datetime import datetime
 
 # Initialize colorama
 init()
+
+def get_timestamp() -> str:
+    """Get current timestamp in a readable format."""
+    return datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
 
 def print_success(message: str) -> None:
     """Print a success message in green with checkmark."""

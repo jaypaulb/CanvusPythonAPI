@@ -21,8 +21,9 @@ if not test_files_dir.exists():
 from canvus_api import CanvusClient, CanvusAPIError
 from test_utils import (
     print_success, print_error, print_info, 
-    print_warning, print_header, load_config
+    print_warning, print_header, load_config, get_timestamp
 )
+from auto_test_full import TestSession
 
 async def create_test_token(client: CanvusClient, user_id: int) -> Tuple[str, str]:
     """Create a test token for running tests.
@@ -376,48 +377,55 @@ async def cleanup_test_canvas(client: CanvusClient, canvas_id: str) -> None:
     except Exception as e:
         print_error(f"Failed to clean up test canvas: {e}")
 
-async def test_canvas_resources(client: CanvusClient) -> None:
-    """Main test function."""
-    print_header("Starting Canvus Resource Tests")
-    
-    # Get user ID from config or use default
-    config = load_config()
-    user_id = config.get("user_id", 1000)  # Default to 1000 if not specified
-    
-    # Create a test token for our test suite
-    test_token_id, test_token = await create_test_token(client, user_id)
+async def test_canvas_resources(client: CanvusClient, session: TestSession) -> None:
+    """Test canvas CRUD operations."""
+    print_header(f"{get_timestamp()} Testing Canvas Resources")
     
     try:
-        # Create a new client with our test token
-        async with CanvusClient(
-            base_url=config["base_url"],
-            api_key=test_token
-        ) as test_client:
-            print_success("Test client initialized with new token")
+        # Safety check: Verify we're running as non-admin user
+        user_info = await client.get_current_user()
+        if user_info.admin:
+            raise ValueError("SAFETY ALERT: Tests must be run as non-admin user")
             
-            # Create test canvas
-            canvas_id = await setup_test_canvas(test_client)
-            if not canvas_id:
-                return
+        # Create a test canvas
+        canvas_data = {
+            "name": f"Test Canvas {get_timestamp()}",  # Add timestamp for uniqueness
+            "width": 1920,
+            "height": 1080,
+            "description": "Created by automated test"
+        }
+        canvas = await client.create_canvas(canvas_data)
+        
+        # Verify canvas ownership
+        if canvas.owner_id != session.user_id:
+            raise ValueError(f"Safety check failed: Created canvas not owned by test user")
             
-            try:
-                # Run all tests with the test token
-                await test_note_operations(test_client, canvas_id)
-                await test_image_operations(test_client, canvas_id)
-                await test_browser_operations(test_client, canvas_id)
-                await test_connector_operations(test_client, canvas_id)
-                await test_video_operations(test_client, canvas_id)
-                await test_pdf_operations(test_client, canvas_id)
-            finally:
-                # Clean up test canvas
-                await cleanup_test_canvas(test_client, canvas_id)
+        print_success(f"{get_timestamp()} Created test canvas: {canvas.id}")
+        
+        # Track this canvas for cleanup
+        session.track_canvas(canvas.id)
+        
+        # Test canvas operations
+        await test_note_operations(client, canvas.id)
+        await test_image_operations(client, canvas.id)
+        await test_browser_operations(client, canvas.id)
+        await test_connector_operations(client, canvas.id)
+        await test_video_operations(client, canvas.id)
+        await test_pdf_operations(client, canvas.id)
+    except Exception as e:
+        print_error(f"{get_timestamp()} Canvas resource test error: {e}")
+        raise
     finally:
-        # Clean up our test token
+        # Clean up test canvas
         try:
-            await client.delete_token(user_id, test_token_id)
-            print_success("Cleaned up test token")
+            # Verify ownership before deletion
+            canvas_info = await client.get_canvas(canvas.id)
+            if canvas_info.owner_id == session.user_id:
+                await cleanup_test_canvas(client, canvas.id)
+            else:
+                print_warning(f"{get_timestamp()} Skipping cleanup of canvas {canvas.id} - not owned by test user")
         except Exception as e:
-            print_error(f"Failed to clean up test token: {e}")
+            print_error(f"{get_timestamp()} Error during canvas cleanup: {e}")
 
 if __name__ == "__main__":
     async def run():
@@ -429,6 +437,7 @@ if __name__ == "__main__":
             api_key=config["api_key"]
         ) as client:
             print_success("Client initialized")
-            await test_canvas_resources(client)
+            session = TestSession()
+            await test_canvas_resources(client, session)
             
     asyncio.run(run()) 

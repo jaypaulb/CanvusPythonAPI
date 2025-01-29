@@ -53,11 +53,27 @@ class CanvasStatus(BaseModel):
 
 
 class User(BaseModel):
-    """User information."""
-    id: str
-    name: str
+    """User information from the API.
+    
+    Note:
+        Only email, name, password, admin, approved, and blocked can be set during creation.
+        Other fields are managed by the server.
+    """
+    # Required fields for user creation
     email: str
-    role: Optional[str] = None
+    name: str
+    
+    # Optional fields we can set
+    password: Optional[str] = None
+    admin: bool = False
+    approved: bool = True
+    blocked: bool = False
+    
+    # Server-managed fields (should not be validated during creation)
+    id: Optional[int] = None
+    created_at: Optional[str] = None  # Accept any string format from server
+    last_login: Optional[str] = None  # Accept any string format from server
+    state: Optional[str] = None
 
 
 class Canvas(BaseModel):

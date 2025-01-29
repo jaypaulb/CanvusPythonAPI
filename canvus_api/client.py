@@ -973,6 +973,303 @@ class CanvusClient:
             f"users/{user_id}/access-tokens/{token_id}"
         )
 
+    # User Management
+    async def list_users(self) -> List[User]:
+        """List all users on the server.
+        
+        Returns:
+            List[User]: List of all users
+        """
+        return await self._request(
+            "GET",
+            "users",
+            response_model=User
+        )
+
+    async def get_user(self, user_id: int) -> User:
+        """Get information about a single user.
+        
+        Args:
+            user_id (int): The ID of the user to get
+            
+        Returns:
+            User: User information
+        """
+        return await self._request(
+            "GET",
+            f"users/{user_id}",
+            response_model=User
+        )
+
+    async def create_user(self, payload: Dict[str, Any]) -> User:
+        """Create a new user (admin only).
+        
+        Args:
+            payload (Dict[str, Any]): User data including:
+                - email (str): Email address (required)
+                - name (str): Display name (required)
+                - password (str, optional): Password
+                - admin (bool, optional): Is admin user
+                - approved (bool, optional): Is initially approved
+                - blocked (bool, optional): Is initially blocked
+                
+        Returns:
+            User: Created user information
+        """
+        return await self._request(
+            "POST",
+            "users",
+            response_model=User,
+            json_data=payload
+        )
+
+    async def delete_user(self, user_id: int) -> None:
+        """Permanently delete a user (admin only).
+        
+        Args:
+            user_id (int): The ID of the user to delete
+        """
+        await self._request(
+            "DELETE",
+            f"users/{user_id}"
+        )
+
+    async def register_user(self, payload: Dict[str, Any]) -> Dict[str, Any]:
+        """Register a new user account (no authentication required).
+        
+        Args:
+            payload (Dict[str, Any]): User registration data including:
+                - email (str): Email address (required)
+                - name (str): Display name (required)
+                - password (str): Password (required)
+                - admin (bool, optional): Is admin user
+                - approved (bool, optional): Is initially approved
+                - blocked (bool, optional): Is initially blocked
+                
+        Returns:
+            Dict[str, Any]: Registration response
+        """
+        return await self._request(
+            "POST",
+            "users/register",
+            json_data=payload
+        )
+
+    async def approve_user(self, user_id: int) -> User:
+        """Approve a registered user account (admin only).
+        
+        Args:
+            user_id (int): The ID of the user to approve
+            
+        Returns:
+            User: Updated user information
+        """
+        return await self._request(
+            "POST",
+            f"users/{user_id}/approve",
+            response_model=User
+        )
+
+    async def confirm_email(self, token: str) -> Dict[str, Any]:
+        """Confirm user email address with token from email.
+        
+        Args:
+            token (str): Token from confirmation email
+            
+        Returns:
+            Dict[str, Any]: Confirmation response
+        """
+        return await self._request(
+            "POST",
+            "users/confirm-email",
+            json_data={"token": token}
+        )
+
+    async def change_password(
+        self, 
+        user_id: int, 
+        current_password: str,
+        new_password: str
+    ) -> User:
+        """Change a user's password.
+        
+        Regular users can only change their own password.
+        Admins can change any user's password.
+        
+        Args:
+            user_id (int): The ID of the user
+            current_password (str): Current password
+            new_password (str): New password
+            
+        Returns:
+            User: Updated user information
+        """
+        return await self._request(
+            "POST",
+            f"users/{user_id}/password",
+            response_model=User,
+            json_data={
+                "current_password": current_password,
+                "new_password": new_password
+            }
+        )
+
+    async def request_password_reset(self, email: str) -> None:
+        """Request a password reset email.
+        
+        Args:
+            email (str): Email address of the user
+        """
+        await self._request(
+            "POST",
+            "users/password/create-reset-token",
+            json_data={"email": email}
+        )
+
+    async def validate_reset_token(self, token: str) -> Dict[str, Any]:
+        """Validate a password reset token without consuming it.
+        
+        Args:
+            token (str): Token from reset email
+            
+        Returns:
+            Dict[str, Any]: Validation response
+        """
+        return await self._request(
+            "GET",
+            "users/password/validate-reset-token",
+            params={"token": token}
+        )
+
+    async def reset_password(self, token: str, new_password: str) -> Dict[str, Any]:
+        """Reset password using token from reset email.
+        
+        Args:
+            token (str): Token from reset email
+            new_password (str): New password
+            
+        Returns:
+            Dict[str, Any]: Reset response
+        """
+        return await self._request(
+            "POST",
+            "users/password/reset",
+            json_data={
+                "token": token,
+                "password": new_password
+            }
+        )
+
+    async def login(
+        self, 
+        email: Optional[str] = None,
+        password: Optional[str] = None,
+        token: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """Sign in user and get access token.
+        
+        Can authenticate with either:
+        1. Email and password
+        2. Existing token (will be validated and refreshed)
+        
+        Args:
+            email (str, optional): User email
+            password (str, optional): User password
+            token (str, optional): Existing token to validate
+            
+        Returns:
+            Dict[str, Any]: Login response with token and user info
+        """
+        if token:
+            payload = {"token": token}
+        else:
+            if not email or not password:
+                raise ValueError("Must provide either token or email+password")
+            payload = {
+                "email": email,
+                "password": password
+            }
+            
+        return await self._request(
+            "POST",
+            "users/login",
+            json_data=payload
+        )
+
+    async def logout(self, token: Optional[str] = None) -> None:
+        """Sign out user by invalidating token.
+        
+        Args:
+            token (str, optional): Token to invalidate. If not provided,
+                                 the client's token will be used.
+        """
+        payload = {"token": token} if token else None
+        await self._request(
+            "POST",
+            "users/logout",
+            json_data=payload
+        )
+
+    async def block_user(self, user_id: int) -> User:
+        """Block a user from signing in.
+        
+        Regular users can only block themselves.
+        Admins can block any user.
+        
+        Args:
+            user_id (int): The ID of the user to block
+            
+        Returns:
+            User: Updated user information
+        """
+        return await self._request(
+            "POST",
+            f"users/{user_id}/block",
+            response_model=User
+        )
+
+    async def unblock_user(self, user_id: int) -> User:
+        """Unblock a user (admin only).
+        
+        Args:
+            user_id (int): The ID of the user to unblock
+            
+        Returns:
+            User: Updated user information
+        """
+        return await self._request(
+            "POST",
+            f"users/{user_id}/unblock",
+            response_model=User
+        )
+
+    async def update_user(self, user_id: int, payload: Dict[str, Any]) -> User:
+        """Update user profile information.
+        
+        Regular users can only update their own profile and only certain fields.
+        Admins can update all fields of any user.
+        
+        Args:
+            user_id (int): The ID of the user to update
+            payload (Dict[str, Any]): Update data which may include:
+                - email (str): New email address
+                - name (str): New display name
+                - password (str): New password (admin only)
+                - admin (bool): Is admin (admin only)
+                - approved (bool): Is approved (admin only)
+                - blocked (bool): Is blocked
+                - need_email_confirmation (bool): Has confirmed email (admin only)
+                
+        Returns:
+            User: Updated user information
+        """
+        return await self._request(
+            "PATCH",
+            f"users/{user_id}",
+            response_model=User,
+            json_data=payload
+        )
+
     # Workspace Operations
     async def list_workspaces(self, client_id: str) -> List[Workspace]:
         """List all workspaces of a client.
