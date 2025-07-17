@@ -96,6 +96,32 @@ async def test_send_test_email(client: CanvusClient) -> None:
         print_error(f"Error sending test email: {e}")
         # Note: This might fail if email is not configured, which is expected
 
+async def test_canvas_preview(client: CanvusClient) -> None:
+    """Test getting canvas preview."""
+    print_header("Testing Canvas Preview")
+    try:
+        # First, get a list of canvases to find one to test with
+        canvases = await client.list_canvases()
+        if not canvases:
+            print_warning("No canvases available for preview test")
+            return
+            
+        # Use the first canvas for testing
+        canvas_id = canvases[0].id
+        print_success(f"Testing preview for canvas: {canvas_id}")
+        
+        # Get the preview
+        preview_data = await client.get_canvas_preview(canvas_id)
+        
+        # Verify we got binary data
+        if isinstance(preview_data, bytes) and len(preview_data) > 0:
+            print_success(f"Got preview data: {len(preview_data)} bytes")
+        else:
+            print_error("Preview data is not valid binary data")
+            
+    except Exception as e:
+        print_error(f"Error getting canvas preview: {e}")
+
 async def test_folder_operations(client: CanvusClient) -> None:
     """Test folder operations."""
     print_header("Testing Folder Operations")
@@ -250,6 +276,7 @@ async def test_server_functions(client: CanvusClient) -> None:
             await test_server_info(test_client)
             await test_server_config_update(test_client)
             await test_send_test_email(test_client)
+            await test_canvas_preview(test_client)
             await test_folder_operations(test_client)
             await test_permission_management(test_client)
             await test_token_operations(test_client, user_id)
