@@ -86,7 +86,7 @@ This document lists all remaining tasks to complete the Canvus Python API implem
 ## 4. Canvas Content - Widgets - Missing Endpoints
 
 ### 4.1 Widget CRUD Operations
-- [ ] **Task 4.1.1**: Implement widget creation method
+- [🔄] **Task 4.1.1**: Implement widget creation method - Status: In Progress (Issue #7)
   - **Endpoint**: `POST /canvases/:id/widgets`
   - **Method**: `create_widget(canvas_id: str, payload: Dict[str, Any]) -> Widget`
   - **Implementation Steps**:
