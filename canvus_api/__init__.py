@@ -6,4 +6,4 @@ from .client import CanvusClient, CanvusAPIError
 from .models import Canvas, CanvasStatus, ServerStatus
 
 __version__ = "0.1.0"
-__all__ = ["CanvusClient", "Canvas", "CanvasStatus", "ServerStatus", "CanvusAPIError"] 
+__all__ = ["CanvusClient", "Canvas", "CanvasStatus", "ServerStatus", "CanvusAPIError"]

@@ -48,6 +48,54 @@ async def test_server_info(client: CanvusClient) -> None:
     except Exception as e:
         print_error(f"Error getting server info: {e}")
 
+async def test_server_config_update(client: CanvusClient) -> None:
+    """Test updating server configuration."""
+    print_header("Testing Server Config Update")
+    try:
+        # Get current config
+        original_config = await client.get_server_config()
+        original_name = original_config.server_name
+        
+        # Update server name
+        new_name = f"Test Server {asyncio.get_event_loop().time()}"
+        updated_config = await client.update_server_config({
+            "server_name": new_name
+        })
+        print_success(f"Updated server name to: {updated_config.server_name}")
+        
+        # Verify the update
+        if updated_config.server_name == new_name:
+            print_success("Server name update verified")
+        else:
+            print_error(f"Server name not updated correctly. Expected: {new_name}, Got: {updated_config.server_name}")
+        
+        # Restore original name
+        await client.update_server_config({
+            "server_name": original_name
+        })
+        print_success("Restored original server name")
+        
+    except Exception as e:
+        print_error(f"Error updating server config: {e}")
+
+async def test_send_test_email(client: CanvusClient) -> None:
+    """Test sending test email."""
+    print_header("Testing Send Test Email")
+    try:
+        result = await client.send_test_email()
+        print_success(f"Test email result: {result}")
+        
+        # Check if the result indicates success
+        if isinstance(result, dict):
+            status = result.get('status', 'unknown')
+            print_success(f"Test email status: {status}")
+        else:
+            print_success("Test email sent successfully")
+            
+    except Exception as e:
+        print_error(f"Error sending test email: {e}")
+        # Note: This might fail if email is not configured, which is expected
+
 async def test_folder_operations(client: CanvusClient) -> None:
     """Test folder operations."""
     print_header("Testing Folder Operations")
@@ -200,6 +248,8 @@ async def test_server_functions(client: CanvusClient) -> None:
             
             # Run all tests with the test token
             await test_server_info(test_client)
+            await test_server_config_update(test_client)
+            await test_send_test_email(test_client)
             await test_folder_operations(test_client)
             await test_permission_management(test_client)
             await test_token_operations(test_client, user_id)
