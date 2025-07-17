@@ -1,0 +1,92 @@
+---
+globs: *.py,*.pyi
+---
+
+# Python Code Standards for MT-Canvus MCP Server
+
+## Quality Requirements
+- All code must pass: ruff, black, mypy, pytest
+- Test coverage >80%
+- Docstrings for all public functions/classes
+- Use Google or NumPy docstring format consistently
+
+## Code Style
+- Use conventional commits: `{type}({scope}): {description}`
+- Follow PEP 8 standards (enforced by black and ruff)
+- Use type hints for all function parameters and return values
+- Use async/await for I/O operations
+
+## Documentation
+- All public functions must have docstrings
+- Include parameter types, return types, and examples
+- Document exceptions that may be raised
+- Update API documentation for endpoint changes
+
+## Security
+- Never commit secrets or credentials
+- Use environment variables for configuration
+- Validate all inputs and handle errors gracefully
+- No sensitive data in logs
+
+## Testing
+- Write unit tests for all new functions
+- Include integration tests for API endpoints
+- Use pytest fixtures for test data
+- Mock external dependencies
+
+## Error Handling
+- Implement comprehensive error handling
+- Use custom exception classes where appropriate
+- Log errors appropriately (no sensitive data)
+- Return meaningful error messages to users
+
+## Dependencies
+- Use [CanvusPythonAPI](mdc:https://github.com/jaypaulb/CanvusPythonAPI) for API interactions
+- Use FastAPI_MCP for MCP server functionality
+- Use pdfplumber for PDF text extraction
+- Use SQLite for PDF content caching
+
+# Python Code Standards for MT-Canvus MCP Server
+
+## Quality Requirements
+- All code must pass: ruff, black, mypy, pytest
+- Test coverage >80%
+- Docstrings for all public functions/classes
+- Use Google or NumPy docstring format consistently
+
+## Code Style
+- Use conventional commits: `{type}({scope}): {description}`
+- Follow PEP 8 standards (enforced by black and ruff)
+- Use type hints for all function parameters and return values
+- Use async/await for I/O operations
+
+## Documentation
+- All public functions must have docstrings
+- Include parameter types, return types, and examples
+- Document exceptions that may be raised
+- Update API documentation for endpoint changes
+
+## Security
+- Never commit secrets or credentials
+- Use environment variables for configuration
+- Validate all inputs and handle errors gracefully
+- No sensitive data in logs
+
+## Testing
+- Write unit tests for all new functions
+- Include integration tests for API endpoints
+- Use pytest fixtures for test data
+- Mock external dependencies
+
+## Error Handling
+- Implement comprehensive error handling
+- Use custom exception classes where appropriate
+- Log errors appropriately (no sensitive data)
+- Return meaningful error messages to users
+
+## Dependencies
+- Use [CanvusPythonAPI](mdc:https://github.com/jaypaulb/CanvusPythonAPI) for API interactions
+- Use FastAPI_MCP for MCP server functionality
+- Use pdfplumber for PDF text extraction
+- Use SQLite for PDF content caching
+

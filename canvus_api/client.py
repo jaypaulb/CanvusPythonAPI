@@ -846,6 +846,76 @@ class CanvusClient:
             "GET", f"canvases/{canvas_id}/widgets/{widget_id}", response_model=Widget
         )
 
+    async def create_widget(self, canvas_id: str, payload: Dict[str, Any]) -> Widget:
+        """Create a new widget in a canvas.
+
+        Args:
+            canvas_id (str): The ID of the canvas
+            payload (Dict[str, Any]): Widget creation data including:
+                - widget_type (str): Type of widget to create
+                - location (Dict[str, float]): Widget position {"x": float, "y": float}
+                - size (Dict[str, float]): Widget dimensions {"width": float, "height": float}
+                - config (Dict[str, Any], optional): Custom configuration for the widget
+                - depth (int, optional): Z-order depth
+                - scale (float, optional): Scale factor
+                - pinned (bool, optional): Whether widget is pinned
+                - parent_id (str, optional): Parent widget ID
+
+        Returns:
+            Widget: The created widget
+
+        Raises:
+            CanvusAPIError: If widget creation fails
+        """
+        return await self._request(
+            "POST",
+            f"canvases/{canvas_id}/widgets",
+            response_model=Widget,
+            json_data=payload,
+        )
+
+    async def update_widget(
+        self, canvas_id: str, widget_id: str, payload: Dict[str, Any]
+    ) -> Widget:
+        """Update a widget in a canvas.
+
+        Args:
+            canvas_id (str): The ID of the canvas
+            widget_id (str): The ID of the widget to update
+            payload (Dict[str, Any]): Widget update data. Can include:
+                - location (Dict[str, float]): New position
+                - size (Dict[str, float]): New dimensions
+                - config (Dict[str, Any]): Updated configuration
+                - depth (int): New Z-order depth
+                - scale (float): New scale factor
+                - pinned (bool): New pinned state
+                - parent_id (str): New parent widget ID
+
+        Returns:
+            Widget: The updated widget
+
+        Raises:
+            CanvusAPIError: If widget update fails
+        """
+        return await self._request(
+            "PATCH",
+            f"canvases/{canvas_id}/widgets/{widget_id}",
+            response_model=Widget,
+            json_data=payload,
+        )
+
+    async def delete_widget(self, canvas_id: str, widget_id: str) -> None:
+        """Delete a widget from a canvas.
+
+        Args:
+            canvas_id (str): The ID of the canvas
+            widget_id (str): The ID of the widget to delete
+
+        Raises:
+            CanvusAPIError: If widget deletion fails
+        """
+        await self._request("DELETE", f"canvases/{canvas_id}/widgets/{widget_id}")
+
     async def get_anchor(self, canvas_id: str, anchor_id: str) -> Anchor:
         """Get details of a specific anchor."""
         return await self._request(

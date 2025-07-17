@@ -1,0 +1,74 @@
+---
+globs: TASKS.md,*.md
+---
+
+# Task Management Standards
+
+## TASKS.md Rules
+- [TASKS.md](mdc:TASKS.md) is the single source of truth for all project tasks
+- Update task status immediately when starting/completing work
+- Use proper status indicators:
+  - `- [ ]` = Not started
+  - `- [🔄]` = In Progress (add Status: In Progress (Issue #X))
+  - `- [✅]` = Completed (add Status: Completed (Issue #X))
+  - `- [🚫]` = Blocked (add Status: Blocked (Issue #X))
+
+## Task Updates
+- Every task must reference its GitLab issue number
+- Include estimate time and actual completion time
+- Document any blockers or dependencies
+- Update status before committing code changes
+
+## Documentation Updates
+- Update [Notes.md](mdc:Notes.md) for architectural decisions
+- Update [PRD.md](mdc:PRD.md) for requirement changes
+- Update [TECH_STACK.md](mdc:TECH_STACK.md) for technology changes
+- Keep all documentation in sync with implementation
+
+## Issue References
+- All tasks must have corresponding GitLab issues
+- Reference issue numbers in commits and MRs
+- Use format: `(Issue #X)` in task status
+- Link tasks to issues in issue descriptions
+
+## Progress Tracking
+- Work on one task at a time
+- Do not skip phases or tasks
+- Move to next available task when blocked
+- Document blockers thoroughly before moving on
+
+# Task Management Standards
+
+## TASKS.md Rules
+- [TASKS.md](mdc:TASKS.md) is the single source of truth for all project tasks
+- Update task status immediately when starting/completing work
+- Use proper status indicators:
+  - `- [ ]` = Not started
+  - `- [🔄]` = In Progress (add Status: In Progress (Issue #X))
+  - `- [✅]` = Completed (add Status: Completed (Issue #X))
+  - `- [🚫]` = Blocked (add Status: Blocked (Issue #X))
+
+## Task Updates
+- Every task must reference its GitLab issue number
+- Include estimate time and actual completion time
+- Document any blockers or dependencies
+- Update status before committing code changes
+
+## Documentation Updates
+- Update [Notes.md](mdc:Notes.md) for architectural decisions
+- Update [PRD.md](mdc:PRD.md) for requirement changes
+- Update [TECH_STACK.md](mdc:TECH_STACK.md) for technology changes
+- Keep all documentation in sync with implementation
+
+## Issue References
+- All tasks must have corresponding GitLab issues
+- Reference issue numbers in commits and MRs
+- Use format: `(Issue #X)` in task status
+- Link tasks to issues in issue descriptions
+
+## Progress Tracking
+- Work on one task at a time
+- Do not skip phases or tasks
+- Move to next available task when blocked
+- Document blockers thoroughly before moving on
+

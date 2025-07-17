@@ -86,7 +86,7 @@ This document lists all remaining tasks to complete the Canvus Python API implem
 ## 4. Canvas Content - Widgets - Missing Endpoints
 
 ### 4.1 Widget CRUD Operations
-- [ ] **Task 4.1.1**: Implement widget creation method
+- [✅] **Task 4.1.1**: Implement widget creation method - Status: Completed (Issue #7)
   - **Endpoint**: `POST /canvases/:id/widgets`
   - **Method**: `create_widget(canvas_id: str, payload: Dict[str, Any]) -> Widget`
   - **Implementation Steps**:
@@ -98,7 +98,7 @@ This document lists all remaining tasks to complete the Canvus Python API implem
     6. Add docstring following Google format
     7. Add unit test
 
-- [ ] **Task 4.1.2**: Implement widget update method
+- [✅] **Task 4.1.2**: Implement widget update method - Status: Completed (Issue #7)
   - **Endpoint**: `PATCH /canvases/:id/widgets/:widget_id`
   - **Method**: `update_widget(canvas_id: str, widget_id: str, payload: Dict[str, Any]) -> Widget`
   - **Implementation Steps**:
@@ -110,7 +110,7 @@ This document lists all remaining tasks to complete the Canvus Python API implem
     6. Add docstring following Google format
     7. Add unit test
 
-- [ ] **Task 4.1.3**: Implement widget deletion method
+- [✅] **Task 4.1.3**: Implement widget deletion method - Status: Completed (Issue #7)
   - **Endpoint**: `DELETE /canvases/:id/widgets/:widget_id`
   - **Method**: `delete_widget(canvas_id: str, widget_id: str) -> None`
   - **Implementation Steps**:
