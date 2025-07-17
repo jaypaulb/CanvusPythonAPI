@@ -58,7 +58,7 @@ This document lists all remaining tasks to complete the Canvus Python API implem
 ## 3. Canvas Folders - Missing Endpoints
 
 ### 3.1 Folder Copy Endpoint
-- [🔄] **Task 3.1.1**: Implement folder copy method - Status: In Progress (Issue #5)
+- [✅] **Task 3.1.1**: Implement folder copy method - Status: Completed (Issue #5)
   - **Endpoint**: `POST /canvas-folders/:id/copy`
   - **Method**: `copy_folder(folder_id: str, payload: Dict[str, Any]) -> CanvasFolder`
   - **Implementation Steps**:
@@ -71,7 +71,7 @@ This document lists all remaining tasks to complete the Canvus Python API implem
     7. Add unit test
 
 ### 3.2 Delete Folder Children Endpoint
-- [ ] **Task 3.2.1**: Implement delete folder children method
+- [✅] **Task 3.2.1**: Implement delete folder children method - Status: Completed (Issue #5)
   - **Endpoint**: `DELETE /canvas-folders/:id/children`
   - **Method**: `delete_folder_children(folder_id: str) -> None`
   - **Implementation Steps**:
