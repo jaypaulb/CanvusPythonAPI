@@ -1,0 +1,7 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+When the llm makes a call to the terminal to preform a function it MUST read the output and validate that the function worked and completed as expected.  If the output doesnt match the expected output the llm needs to resolve that action before proceeding.  Under no circumstances is the LLM to proceed on the assumption that it worked.
+

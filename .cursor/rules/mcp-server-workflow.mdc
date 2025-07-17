@@ -1,0 +1,87 @@
+---
+alwaysApply: true
+---
+
+# MT-Canvus MCP Server Development Workflow
+
+## Core Rules
+- [TASKS.md](mdc:TASKS.md) is the single source of truth for all project tasks
+- Every task must have a GitLab issue before work begins
+- Use conventional commits: `{type}({scope}): {description}`
+- All code must pass: ruff, black, mypy, pytest (run individually)
+- Update TASKS.md immediately when starting/completing tasks
+
+## Task Status Indicators
+- `- [ ]` = Not started
+- `- [🔄]` = In Progress (add Status: In Progress (Issue #X))
+- `- [✅]` = Completed (add Status: Completed (Issue #X))
+- `- [🚫]` = Blocked (add Status: Blocked (Issue #X))
+
+## Quality Requirements
+- Test coverage >80%
+- Docstrings for all public functions/classes
+- No secrets in code
+- Comprehensive error handling
+- Use environment variables for configuration
+- **IMPORTANT: Run quality checks individually to identify specific issues**
+- **Update workflow documentation immediately** when gaps or missing steps are discovered
+- **Test assertion robustness** — Ensure test assertions handle edge cases including zero values and empty states
+
+## Blocker Protocol
+- Document blocker thoroughly in issue comments
+- Mark issue blocked: `glab issue edit {number} --label "blocked"`
+- Update TASKS.md as blocked
+- Move to next available task immediately
+
+## Completion Workflow
+- **CRITICAL: Run quality checks individually before MR**:
+  - `ruff check .`
+  - `black --check .`
+  - `mypy .`
+  - `pytest`
+- **CRITICAL: Self-merge MR if no issues found**: `glab mr merge {number} --squash --remove-source-branch --yes`
+- **CRITICAL: Close issue after merge**: `glab issue close {number}`
+- **CRITICAL: Switch back to main**: `git checkout main && git pull origin main`
+- Verify completion: Check MR status and issue closure
+- Update TASKS.md as completed if not already done
+
+## Commands Reference
+```bash
+# Issue management
+glab issue create --title "Task X.X.X: description" --description "requirements"
+glab issue list --state open
+glab issue edit {number} --label "blocked"
+
+# Branch management
+git checkout -b feature/{issue-number}-description
+git checkout main && git pull origin main
+
+# Quality checks (run individually)
+ruff check .
+black --check .
+mypy .
+pytest
+
+# MR creation and completion
+glab mr create --title "feat: description (Issue #X)" --description "implements Task X.X.X"
+glab mr merge {number} --squash --remove-source-branch --yes
+```
+
+## Success Criteria
+Before MR submission:
+- [ ] Code passes quality checks
+- [ ] Tests pass
+- [ ] Documentation updated
+- [ ] TASKS.md updated
+- [ ] Issue referenced
+- [ ] Conventional commits used
+- [ ] No secrets in code
+- [ ] Error handling implemented
+
+After MR completion:
+- [ ] **CRITICAL: MR self-merged (if no issues)**
+- [ ] **CRITICAL: Issue closed**
+- [ ] **CRITICAL: Switched back to main branch**
+- [ ] **CRITICAL: Latest changes pulled**
+- [ ] **CRITICAL: Verify completion** — Check MR status and issue closure
+
