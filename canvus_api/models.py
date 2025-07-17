@@ -206,14 +206,23 @@ class Widget(BaseWidget):
     config: Dict[str, Any] = Field(default_factory=dict)
 
     @classmethod
-    def model_validate(cls, obj: Any, *, strict: bool | None = None, from_attributes: bool | None = None, context: Any = None) -> "Widget":
+    def model_validate(
+        cls,
+        obj: Any,
+        *,
+        strict: bool | None = None,
+        from_attributes: bool | None = None,
+        context: Any = None,
+    ) -> "Widget":
         """Custom validation to handle CanvasBackground."""
         if isinstance(obj, dict) and obj.get("widget_type") == "CanvasBackground":
             # For CanvasBackground, use default location and size
             obj.setdefault("location", {"x": 0, "y": 0})
             obj.setdefault("size", {"width": 1920, "height": 1080})
             obj.setdefault("id", "background")
-        return super().model_validate(obj, strict=strict, from_attributes=from_attributes, context=context)
+        return super().model_validate(
+            obj, strict=strict, from_attributes=from_attributes, context=context
+        )
 
 
 class Anchor(BaseWidget):
