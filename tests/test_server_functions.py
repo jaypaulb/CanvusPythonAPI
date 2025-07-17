@@ -127,6 +127,7 @@ async def test_folder_operations(client: CanvusClient) -> None:
     print_header("Testing Folder Operations")
     
     folder_id = None
+    copied_folder_id = None
     try:
         # List existing folders
         folders = await client.list_folders()
@@ -139,17 +140,36 @@ async def test_folder_operations(client: CanvusClient) -> None:
         folder_id = new_folder.id
         print_success(f"Created folder: {new_folder.name}")
         
+        # Test folder copy
+        copied_folder = await client.copy_folder(folder_id, {
+            "folder_id": new_folder.folder_id,  # Copy to same parent
+            "name": f"Copy of {new_folder.name}"
+        })
+        copied_folder_id = copied_folder.id
+        print_success(f"Copied folder: {copied_folder.name}")
+        
+        # Test delete folder children
+        await client.delete_folder_children(copied_folder_id)
+        print_success("Deleted folder children")
+        
         # Update folder
         updated = await client.update_folder(folder_id, {
             "name": f"Updated Folder {asyncio.get_event_loop().time()}"
         })
         print_success(f"Updated folder name: {updated.name}")
         
-        # Delete folder and verify deletion
+        # Delete folders and verify deletion
+        if copied_folder_id:
+            await test_folder_deletion(client, copied_folder_id)
         await test_folder_deletion(client, folder_id)
                 
     except Exception as e:
         print_error(f"Folder operations error: {e}")
+        if copied_folder_id:
+            try:
+                await client.delete_folder(copied_folder_id)
+            except:
+                pass
         if folder_id:
             try:
                 await client.delete_folder(folder_id)

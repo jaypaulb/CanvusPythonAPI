@@ -397,9 +397,61 @@ class CanvusClient:
             json_data=payload,
         )
 
+    async def copy_folder(
+        self, folder_id: str, payload: Dict[str, Any]
+    ) -> CanvasFolder:
+        """Copy a folder to a different location.
+
+        Args:
+            folder_id: The ID of the folder to copy.
+            payload: Copy configuration data. Must include:
+                - folder_id: ID of the destination parent folder
+                - name: Optional new name for the copied folder
+
+        Returns:
+            CanvasFolder: The newly created folder copy.
+
+        Raises:
+            ValidationError: If payload is missing required fields.
+            ResourceNotFoundError: If source or destination folder is not found.
+            AuthenticationError: If authentication fails.
+            CanvusAPIError: For other API-related errors.
+
+        Example:
+            >>> copied_folder = await client.copy_folder("folder-123", {
+            ...     "folder_id": "parent-folder-456",
+            ...     "name": "Copy of My Folder"
+            ... })
+            >>> print(copied_folder.name)
+            Copy of My Folder
+        """
+        return await self._request(
+            "POST",
+            f"canvas-folders/{folder_id}/copy",
+            response_model=CanvasFolder,
+            json_data=payload,
+        )
+
     async def delete_folder(self, folder_id: str) -> None:
         """Delete a folder."""
         await self._request("DELETE", f"canvas-folders/{folder_id}")
+
+    async def delete_folder_children(self, folder_id: str) -> None:
+        """Delete all children of a folder.
+
+        Args:
+            folder_id: The ID of the folder whose children should be deleted.
+
+        Raises:
+            ResourceNotFoundError: If the folder is not found.
+            AuthenticationError: If authentication fails.
+            CanvusAPIError: For other API-related errors.
+
+        Example:
+            >>> await client.delete_folder_children("folder-123")
+            >>> print("All children deleted successfully")
+        """
+        await self._request("DELETE", f"canvas-folders/{folder_id}/children")
 
     # Demo Canvas Operations
     async def set_canvas_mode(self, canvas_id: str, is_demo: bool) -> Canvas:
