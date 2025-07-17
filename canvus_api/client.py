@@ -14,6 +14,7 @@ from typing import (
     Callable,
 )
 import json
+import os
 from pydantic import BaseModel, ValidationError
 import aiohttp
 
@@ -915,6 +916,78 @@ class CanvusClient:
             CanvusAPIError: If widget deletion fails
         """
         await self._request("DELETE", f"canvases/{canvas_id}/widgets/{widget_id}")
+
+    # Canvas Background Operations
+    async def get_canvas_background(self, canvas_id: str) -> Dict[str, Any]:
+        """Get the background configuration for a canvas.
+
+        Args:
+            canvas_id (str): The ID of the canvas
+
+        Returns:
+            Dict[str, Any]: Background configuration data including:
+                - type (str): Background type (color, image, etc.)
+                - color (str, optional): Background color
+                - image_url (str, optional): Background image URL
+                - opacity (float, optional): Background opacity
+                - scale (float, optional): Background scale factor
+
+        Raises:
+            CanvusAPIError: If background retrieval fails
+        """
+        return await self._request("GET", f"canvases/{canvas_id}/background")
+
+    async def set_canvas_background(
+        self, canvas_id: str, payload: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """Set the background configuration for a canvas.
+
+        Args:
+            canvas_id (str): The ID of the canvas
+            payload (Dict[str, Any]): Background configuration data including:
+                - type (str): Background type (color, image, etc.)
+                - color (str, optional): Background color
+                - opacity (float, optional): Background opacity
+                - scale (float, optional): Background scale factor
+
+        Returns:
+            Dict[str, Any]: Updated background configuration
+
+        Raises:
+            CanvusAPIError: If background update fails
+        """
+        return await self._request(
+            "PATCH", f"canvases/{canvas_id}/background", json_data=payload
+        )
+
+    async def set_canvas_background_image(
+        self, canvas_id: str, file_path: str
+    ) -> Dict[str, Any]:
+        """Set a canvas background image by uploading a file.
+
+        Args:
+            canvas_id (str): The ID of the canvas
+            file_path (str): Path to the image file to upload
+
+        Returns:
+            Dict[str, Any]: Background configuration with uploaded image
+
+        Raises:
+            CanvusAPIError: If image upload or background setting fails
+            FileNotFoundError: If the specified file doesn't exist
+        """
+        if not os.path.exists(file_path):
+            raise FileNotFoundError(f"Image file not found: {file_path}")
+
+        # Create form data for file upload
+        form_data = aiohttp.FormData()
+        form_data.add_field(
+            "image", open(file_path, "rb"), filename=os.path.basename(file_path)
+        )
+
+        return await self._request(
+            "POST", f"canvases/{canvas_id}/background", data=form_data
+        )
 
     async def get_anchor(self, canvas_id: str, anchor_id: str) -> Anchor:
         """Get details of a specific anchor."""

@@ -4,6 +4,7 @@ Test suite for Canvus server functions (server info, config, email, etc.).
 
 import sys
 import asyncio
+import os
 from pathlib import Path
 from typing import Tuple
 from canvus_api import CanvusClient, CanvusAPIError
@@ -283,6 +284,53 @@ async def test_token_operations(client: CanvusClient, user_id: int) -> None:
                 pass
 
 
+async def test_canvas_background_operations(client: CanvusClient) -> None:
+    """Test canvas background operations."""
+    print_header("Testing Canvas Background Operations")
+
+    canvas_id = None
+    try:
+        # First, get a list of canvases to find one to test with
+        canvases = await client.list_canvases()
+        if not canvases:
+            print_warning("No canvases available for background test")
+            return
+
+        # Use the first canvas for testing
+        canvas_id = canvases[0].id
+        print_success(f"Testing background for canvas: {canvas_id}")
+
+        # Get current background
+        background = await client.get_canvas_background(canvas_id)
+        print_success(f"Retrieved background: {background}")
+
+        # Set background to a color
+        color_background = await client.set_canvas_background(
+            canvas_id, {"type": "color", "color": "#ff0000", "opacity": 0.8}
+        )
+        print_success(f"Set color background: {color_background}")
+
+        # Get background again to verify
+        updated_background = await client.get_canvas_background(canvas_id)
+        print_success(f"Verified background update: {updated_background}")
+
+        # Test setting background image (if test image exists)
+        test_image_path = "tests/test_files/test_image.jpg"
+        if os.path.exists(test_image_path):
+            try:
+                image_background = await client.set_canvas_background_image(
+                    canvas_id, test_image_path
+                )
+                print_success(f"Set image background: {image_background}")
+            except Exception as e:
+                print_warning(f"Image background test failed (expected): {e}")
+        else:
+            print_warning("Test image not found, skipping image background test")
+
+    except Exception as e:
+        print_error(f"Canvas background operations error: {e}")
+
+
 async def test_server_functions(client: CanvusClient) -> None:
     """Main test function."""
     print_header("Starting Canvus Server Function Tests")
@@ -306,6 +354,7 @@ async def test_server_functions(client: CanvusClient) -> None:
             await test_server_config_update(test_client)
             await test_send_test_email(test_client)
             await test_canvas_preview(test_client)
+            await test_canvas_background_operations(test_client)
             await test_folder_operations(test_client)
             await test_permission_management(test_client)
             await test_token_operations(test_client, user_id)

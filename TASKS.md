@@ -125,7 +125,7 @@ This document lists all remaining tasks to complete the Canvus Python API implem
 ## 5. Canvas Backgrounds - Missing Endpoints
 
 ### 5.1 Canvas Background Management
-- [ ] **Task 5.1.1**: Implement get canvas background method
+- [✅] **Task 5.1.1**: Implement get canvas background method - Status: Completed (Issue #9)
   - **Endpoint**: `GET /canvases/:id/background`
   - **Method**: `get_canvas_background(canvas_id: str) -> Dict[str, Any]`
   - **Implementation Steps**:
@@ -136,7 +136,7 @@ This document lists all remaining tasks to complete the Canvus Python API implem
     5. Add docstring following Google format
     6. Add unit test
 
-- [ ] **Task 5.1.2**: Implement set canvas background method
+- [✅] **Task 5.1.2**: Implement set canvas background method - Status: Completed (Issue #9)
   - **Endpoint**: `PATCH /canvases/:id/background`
   - **Method**: `set_canvas_background(canvas_id: str, payload: Dict[str, Any]) -> Dict[str, Any]`
   - **Implementation Steps**:
@@ -148,7 +148,7 @@ This document lists all remaining tasks to complete the Canvus Python API implem
     6. Add docstring following Google format
     7. Add unit test
 
-- [ ] **Task 5.1.3**: Implement set canvas background image method
+- [✅] **Task 5.1.3**: Implement set canvas background image method - Status: Completed (Issue #9)
   - **Endpoint**: `POST /canvases/:id/background`
   - **Method**: `set_canvas_background_image(canvas_id: str, file_path: str) -> Dict[str, Any]`
   - **Implementation Steps**:
