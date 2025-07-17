@@ -13,7 +13,7 @@ This document lists all remaining tasks to complete the Canvus Python API implem
 ## 1. Server Management - Missing Endpoints
 
 ### 1.1 Server Config Update Endpoint
-- [🔄] **Task 1.1.1**: Implement server config update method - Status: In Progress (Issue #1)
+- [✅] **Task 1.1.1**: Implement server config update method - Status: Completed (Issue #1)
   - **Endpoint**: `PATCH /server-config`
   - **Method**: `update_server_config(payload: Dict[str, Any]) -> ServerConfig`
   - **Implementation Steps**:
@@ -26,7 +26,7 @@ This document lists all remaining tasks to complete the Canvus Python API implem
     7. Add unit test in `tests/test_server_functions.py`
 
 ### 1.2 Server Config Test Email
-- [ ] **Task 1.2.1**: Implement test email sending method
+- [✅] **Task 1.2.1**: Implement test email sending method - Status: Completed (Issue #1)
   - **Endpoint**: `POST /server-config/send-test-email`
   - **Method**: `send_test_email() -> Dict[str, Any]`
   - **Implementation Steps**:
