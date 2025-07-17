@@ -42,7 +42,7 @@ This document lists all remaining tasks to complete the Canvus Python API implem
 ## 2. Canvas Management - Missing Endpoints
 
 ### 2.1 Canvas Preview Endpoint
-- [ ] **Task 2.1.1**: Implement canvas preview method
+- [🔄] **Task 2.1.1**: Implement canvas preview method - Status: In Progress (Issue #3)
   - **Endpoint**: `GET /canvases/:id/preview`
   - **Method**: `get_canvas_preview(canvas_id: str) -> bytes`
   - **Implementation Steps**:

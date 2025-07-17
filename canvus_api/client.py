@@ -328,6 +328,29 @@ class CanvusClient:
         """Get canvas permissions."""
         return await self._request("GET", f"canvases/{canvas_id}/permissions")
 
+    async def get_canvas_preview(self, canvas_id: str) -> bytes:
+        """Get canvas preview image.
+
+        Args:
+            canvas_id: The ID of the canvas to get the preview for.
+
+        Returns:
+            bytes: Binary image data of the canvas preview.
+
+        Raises:
+            ResourceNotFoundError: If the canvas is not found.
+            AuthenticationError: If authentication fails.
+            CanvusAPIError: For other API-related errors.
+
+        Example:
+            >>> preview_data = await client.get_canvas_preview("canvas-123")
+            >>> with open("preview.png", "wb") as f:
+            ...     f.write(preview_data)
+        """
+        return await self._request(
+            "GET", f"canvases/{canvas_id}/preview", return_binary=True
+        )
+
     async def delete_canvas(self, canvas_id: str) -> None:
         """Delete a canvas."""
         await self._request("DELETE", f"canvases/{canvas_id}")
