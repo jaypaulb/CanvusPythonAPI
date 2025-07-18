@@ -205,7 +205,7 @@ This document lists all remaining tasks to complete the Canvus Python API implem
     5. Add docstring following Google format
     6. Add unit test
 
-- [🔄] **Task 7.1.2**: Implement get group method - Status: In Progress (Issue #15)
+- [✅] **Task 7.1.2**: Implement get group method - Status: Completed (Issue #15)
   - **Endpoint**: `GET /groups/:id`
   - **Method**: `get_group(group_id: str) -> Dict[str, Any]`
   - **Implementation Steps**:
