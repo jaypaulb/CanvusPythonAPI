@@ -331,6 +331,70 @@ async def test_canvas_background_operations(client: CanvusClient) -> None:
         print_error(f"Canvas background operations error: {e}")
 
 
+async def test_video_input_operations(client: CanvusClient) -> None:
+    """Test video input operations."""
+    print_header("Testing Video Input Operations")
+
+    canvas_id = None
+    video_input_id = None
+    try:
+        # First, get a list of canvases to find one to test with
+        canvases = await client.list_canvases()
+        if not canvases:
+            print_warning("No canvases available for video input test")
+            return
+
+        # Use the first canvas for testing
+        canvas_id = canvases[0].id
+        print_success(f"Testing video inputs for canvas: {canvas_id}")
+
+        # List existing video inputs
+        video_inputs = await client.list_canvas_video_inputs(canvas_id)
+        print_success(f"Found {len(video_inputs)} existing video inputs")
+
+        # Create a new video input
+        video_input_payload = {
+            "name": f"Test Video Input {asyncio.get_event_loop().time()}",
+            "source": "test_source_1",
+            "location": {"x": 100.0, "y": 100.0},
+            "size": {"width": 320.0, "height": 240.0},
+            "config": {"fps": 30, "resolution": "720p"},
+            "depth": 1,
+            "scale": 1.0,
+            "pinned": False
+        }
+
+        video_input = await client.create_video_input(canvas_id, video_input_payload)
+        video_input_id = video_input.get("id")
+        print_success(f"Created video input: {video_input.get('name')}")
+
+        # Verify the video input was created
+        if video_input_id:
+            print_success(f"Video input ID: {video_input_id}")
+            print_success(f"Video input name: {video_input.get('name')}")
+            print_success(f"Video input source: {video_input.get('source')}")
+
+        # List video inputs again to verify creation
+        updated_video_inputs = await client.list_canvas_video_inputs(canvas_id)
+        print_success(f"Found {len(updated_video_inputs)} video inputs after creation")
+
+        # Verify our new video input is in the list
+        found = False
+        for vi in updated_video_inputs:
+            if vi.get("id") == video_input_id:
+                found = True
+                break
+        
+        if found:
+            print_success("Verified video input appears in list")
+        else:
+            print_warning("Video input not found in updated list")
+
+    except Exception as e:
+        print_error(f"Video input operations error: {e}")
+        # Note: Video input deletion might not be implemented yet, so we don't clean up
+
+
 async def test_server_functions(client: CanvusClient) -> None:
     """Main test function."""
     print_header("Starting Canvus Server Function Tests")
@@ -355,6 +419,7 @@ async def test_server_functions(client: CanvusClient) -> None:
             await test_send_test_email(test_client)
             await test_canvas_preview(test_client)
             await test_canvas_background_operations(test_client)
+            await test_video_input_operations(test_client)
             await test_folder_operations(test_client)
             await test_permission_management(test_client)
             await test_token_operations(test_client, user_id)
