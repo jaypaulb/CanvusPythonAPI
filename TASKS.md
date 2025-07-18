@@ -177,7 +177,7 @@ This document lists all remaining tasks to complete the Canvus Python API implem
     5. Add docstring following Google format
     6. Add unit test
 
-- [ ] **Task 6.1.2**: Implement update color presets method
+- [🔄] **Task 6.1.2**: Implement update color presets method - Status: In Progress (Issue #13)
   - **Endpoint**: `PATCH /canvases/:canvasId/color-presets`
   - **Method**: `update_color_presets(canvas_id: str, payload: Dict[str, Any]) -> Dict[str, Any]`
   - **Implementation Steps**:
