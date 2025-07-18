@@ -1,3 +1,119 @@
+---
+globs: TASKS.md
+alwaysApply: false
+---
+# Task Management Standards
+
+## TASKS.md Rules
+- [TASKS.md](mdc:TASKS.md) is the single source of truth for all project tasks
+- **CRITICAL: Update TASKS.md in main branch first, then create feature branch**
+- Use proper status indicators:
+  - `- [ ]` = Not started
+  - `- [🔄]` = In Progress (add Status: In Progress (Issue #X))
+  - `- [✅]` = Completed (add Status: Completed (Issue #X))
+  - `- [🚫]` = Blocked (add Status: Blocked (Issue #X))
+
+## Collaborative Task Workflow
+**CRITICAL: Follow this sequence for multi-agent collaboration**
+
+1. **Start on main branch**:
+   ```bash
+   git checkout main
+   git pull origin main
+   ```
+
+2. **Find next available task**:
+   - Open TASKS.md, find first unchecked task `- [ ]`
+   - Work on one task at a time, no parallel tasks
+
+3. **Check for existing work**:
+   ```bash
+   gh issue list --state open
+   git branch -a | grep "feature/{issue-number}"
+   ```
+   - Search for existing issues before creating new ones
+   - Check for existing branches before creating new ones
+
+4. **Update TASKS.md in main branch FIRST**:
+   ```bash
+   git checkout main
+   # Edit TASKS.md: - [🔄] Task X.X.X: description - Status: In Progress (Issue #X)
+   git add TASKS.md
+   git commit -m "docs(tasks): mark Task X.X.X as in progress (Issue #X)"
+   git push origin main
+   ```
+
+5. **Create feature branch**:
+   ```bash
+   git checkout -b feature/{issue-number}-description
+   ```
+   - This ensures the branch has the updated TASKS.md from main
+
+## Task Updates
+- Every task must reference its GitHub issue number
+- Include estimate time and actual completion time
+- Document any blockers or dependencies
+- **CRITICAL: Update status in main branch before committing code changes**
+
+## Documentation Updates
+- Update [Notes.md](mdc:Notes.md) for architectural decisions
+- Update [PRD.md](mdc:PRD.md) for requirement changes
+- Update [TECH_STACK.md](mdc:TECH_STACK.md) for technology changes
+- Keep all documentation in sync with implementation
+
+## Issue References
+- All tasks must have corresponding GitHub issues
+- Reference issue numbers in commits and PRs
+- Use format: `(Issue #X)` in task status
+- Link tasks to issues in issue descriptions
+
+## Progress Tracking
+- Work on one task at a time
+- Do not skip phases or tasks
+- Move to next available task when blocked
+- Document blockers thoroughly before moving on
+
+## Conflict Resolution
+**CRITICAL: Handle conflicts gracefully**
+
+1. **If TASKS.md has conflicts**:
+   ```bash
+   git checkout main
+   git pull origin main
+   # Resolve conflicts in TASKS.md manually
+   git add TASKS.md
+   git commit -m "docs(tasks): resolve conflicts"
+   git push origin main
+   ```
+
+2. **If someone else is working on same task**:
+   - Check issue comments for updates
+   - Coordinate via issue comments
+   - Consider switching to next available task if conflict persists
+
+3. **Always verify task status before starting**:
+   ```bash
+   git checkout main
+   git pull origin main
+   # Check TASKS.md for current status
+   # Check existing issues and branches
+   ```
+
+## Task Completion
+**CRITICAL: Update TASKS.md in main branch after completion**
+
+```bash
+git checkout main
+git pull origin main
+# Edit TASKS.md: - [✅] Task X.X.X: description - Status: Completed (Issue #X)
+git add TASKS.md
+git commit -m "docs(tasks): mark Task X.X.X as completed (Issue #X)"
+git push origin main
+```
+
+
+- Document blockers thoroughly before moving on
+
 
 # Task Management Standards
 

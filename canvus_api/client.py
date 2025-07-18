@@ -45,10 +45,17 @@ JsonData = Union[Dict[str, Any], str]
 class CanvusClient:
     """Client for interacting with the Canvus API."""
 
-    def __init__(self, base_url: str, api_key: str):
-        """Initialize the client."""
+    def __init__(self, base_url: str, api_key: str, verify_ssl: bool = True):
+        """Initialize the client.
+        
+        Args:
+            base_url: The base URL of the Canvus server
+            api_key: The API key for authentication
+            verify_ssl: Whether to verify SSL certificates (default: True)
+        """
         self.base_url = base_url.rstrip("/")
         self.api_key = api_key
+        self.verify_ssl = verify_ssl
         self.session: Optional[aiohttp.ClientSession] = None
 
     async def __aenter__(self) -> "CanvusClient":
@@ -115,7 +122,16 @@ class CanvusClient:
             "Private-Token": self.api_key,  # Real token for request
         }
 
-        async with aiohttp.ClientSession() as session:
+        # Create SSL context based on verify_ssl setting
+        import ssl
+        connector = None
+        if url.startswith('https://') and not self.verify_ssl:
+            ssl_context = ssl.create_default_context()
+            ssl_context.check_hostname = False
+            ssl_context.verify_mode = ssl.CERT_NONE
+            connector = aiohttp.TCPConnector(ssl=ssl_context)
+        
+        async with aiohttp.ClientSession(connector=connector) as session:
             async with session.request(method, url, **request_kwargs) as response:
                 status = response.status
                 print(f"Response status: {status}")

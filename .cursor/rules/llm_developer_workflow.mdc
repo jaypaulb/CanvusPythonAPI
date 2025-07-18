@@ -1,3 +1,7 @@
+---
+alwaysApply: true
+---
+
 
 # MT-Canvus MCP Server Development Workflow
 
@@ -66,6 +70,9 @@
 - **IMPORTANT: Run quality checks individually to identify specific issues**
 - **Update workflow documentation immediately** when gaps or missing steps are discovered
 - **Test assertion robustness** — Ensure test assertions handle edge cases including zero values and empty states
+- **CRITICAL: All integration tests must use the test server** — Use `https://canvusserver` with `verify_ssl: false` and test credentials only
+- **Test Server Configuration**: Use `tests/test_config.json` for server settings
+- **Integration Testing**: Use `TestClient` from `tests/test_config.py` for real server testing
 
 ## Blocker Protocol
 **CRITICAL: Follow this exact sequence when blocked to ensure task state is properly managed in main branch**
@@ -193,7 +200,7 @@ mypy .
 pytest
 
 # PR creation and completion
-gh pr create --title "feat: description (Issue #X)" --body "implements Task X.X.X"
+gh pr create --title "feat: description (Task X.X.X) (Issue #X)" --body "implements Task X.X.X"
 gh pr merge {number} --squash --delete-branch
 
 # Task completion (in main branch)
@@ -212,6 +219,7 @@ Before PR submission:
 - [ ] Documentation updated
 - [ ] TASKS.md updated in main branch
 - [ ] Issue referenced
+- [ ] **CRITICAL**: Task number included in PR title and commit messages
 - [ ] Conventional commits used
 - [ ] No secrets in code
 - [ ] Error handling implemented
@@ -223,7 +231,3 @@ After PR completion:
 - [ ] **CRITICAL: Latest changes pulled**
 - [ ] **CRITICAL: TASKS.md updated in main branch**
 - [ ] **CRITICAL: Verify completion** — Check PR status and issue closure
-
-
-- [ ] **CRITICAL: Verify completion** — Check MR status and issue closure
-

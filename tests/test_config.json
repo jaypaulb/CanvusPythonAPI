@@ -1,0 +1,84 @@
+{
+  "server": {
+    "base_url": "https://canvusserver",
+    "api_version": "v1",
+    "timeout": 30,
+    "max_retries": 3,
+    "verify_ssl": false
+  },
+  "authentication": {
+    "admin_user": {
+      "email": "admin@test.local",
+      "password": "loBbR5rOur",
+      "token": null
+    },
+    "regular_user": {
+      "email": "user@test.local", 
+      "password": "3hzdRrLA68",
+      "token": null
+    },
+    "api_key": "wZ5ltFx8Rrs7BKS-UrjlpoHkFv1uIAx-uAjWtPsQ8e0"
+  },
+  "test_data": {
+    "test_canvas": {
+      "id": null,
+      "name": "Test Canvas - Auto Generated",
+      "description": "Canvas created by automated tests",
+      "folder_id": null
+    },
+    "test_folder": {
+      "id": null,
+      "name": "Test Folder - Auto Generated",
+      "description": "Folder created by automated tests"
+    },
+    "test_group": {
+      "id": null,
+      "name": "Test Group - Auto Generated",
+      "description": "Group created by automated tests"
+    },
+    "test_user": {
+      "id": null,
+      "email": "testuser@test.local",
+      "name": "Test User",
+      "password": "pDR47PLNV+"
+    }
+  },
+  "test_files": {
+    "image": "tests/test_files/test_image.jpg",
+    "video": "tests/test_files/test_video.mp4", 
+    "pdf": "tests/test_files/test_pdf.pdf",
+    "large_image": null,
+    "large_video": null
+  },
+  "test_settings": {
+    "cleanup_after_tests": true,
+    "create_test_data": true,
+    "use_existing_data": false,
+    "parallel_tests": false,
+    "test_timeout": 60,
+    "file_upload_timeout": 120
+  },
+  "endpoints": {
+    "server_info": "/api/v1/server-info",
+    "server_config": "/api/v1/server-config",
+    "canvases": "/api/v1/canvases",
+    "folders": "/api/v1/canvas-folders",
+    "groups": "/api/v1/groups",
+    "users": "/api/v1/users",
+    "clients": "/api/v1/clients",
+    "license": "/api/v1/license",
+    "audit_log": "/api/v1/audit-log"
+  },
+  "validation": {
+    "check_response_schema": true,
+    "validate_file_uploads": true,
+    "test_error_conditions": true,
+    "test_permissions": true
+  },
+  "logging": {
+    "level": "INFO",
+    "log_requests": true,
+    "log_responses": false,
+    "log_file": "tests/test.log"
+  }
+} 

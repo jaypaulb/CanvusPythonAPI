@@ -2,6 +2,36 @@
 
 ## Core Workflow Rules
 
+### PR and Commit Naming Conventions
+
+**CRITICAL: Always include task numbers for easy tracking**
+
+#### PR Title Format
+```
+{type}: {description} (Task X.X.X) (Issue #X)
+```
+
+**Examples:**
+- `feat: implement widget CRUD operations (Task 4.1.1-4.1.3) (Issue #7)`
+- `fix: resolve SSL verification issue (Task 16.1.1) (Issue #25)`
+- `docs: update API documentation (Task 16.2.1) (Issue #42)`
+
+#### Commit Message Format
+```
+{type}({scope}): {description} (Task X.X.X) (Issue #X)
+```
+
+**Examples:**
+- `feat(client): implement widget CRUD operations (Task 4.1.1-4.1.3) (Issue #7)`
+- `fix(client): resolve SSL verification issue (Task 16.1.1) (Issue #25)`
+- `docs(readme): update API documentation (Task 16.2.1) (Issue #42)`
+
+#### Why This Matters
+- **Easy Tracking**: Quickly identify which task was completed
+- **Traceability**: Link commits and PRs directly to TASKS.md
+- **Multi-Agent Collaboration**: Other agents can easily see task progress
+- **Code Review**: Reviewers know exactly what functionality is being added
+
 ### Task Selection & Collaborative Workflow
 **CRITICAL: Follow this exact sequence to ensure robust multi-agent collaboration**
 
@@ -58,7 +88,9 @@
 - Update TASKS.md when complete: `- [✅] Task X.X.X: description - Status: Completed (Issue #X)`
 
 ### Implementation Rules
-- Commit frequently with conventional commits: `{type}({scope}): {description}`
+- Commit frequently with conventional commits: `{type}({scope}): {description} (Task X.X.X)`
+- **CRITICAL: Include task numbers in PR titles**: `feat: implement widget CRUD operations (Task 4.1.1-4.1.3) (Issue #X)`
+- **CRITICAL: Include task numbers in commit messages**: `feat(client): implement widget CRUD operations (Task 4.1.1-4.1.3) (Issue #X)`
 - Test incrementally: Run quality checks individually:
   - `ruff check . -q`
   - `black --check . -q`
@@ -280,6 +312,15 @@ class RateLimitError(CanvusAPIError):
 
 ### Testing Best Practices
 
+#### Test Server Configuration
+**CRITICAL: All tests should be run against the test server, not production**
+
+- **Test Server**: Use `https://canvusserver` for all integration tests
+- **SSL Verification**: Disabled for test server (`verify_ssl: false`)
+- **Test Credentials**: Use dedicated test accounts (admin@test.local, user@test.local)
+- **Test Data**: All test data is automatically created and cleaned up
+- **Configuration**: Test settings are in `tests/test_config.json`
+
 #### Test Structure
 ```
 tests/
@@ -292,6 +333,9 @@ tests/
 │   ├── test_user_service.py
 │   └── test_content_service.py
 ├── test_integration.py      # Integration tests
+├── test_config.py           # Test configuration and utilities
+├── test_config.json         # Test server configuration
+├── test_server_connection.py # Server connection verification
 └── test_files/              # Test data files
     ├── test_image.jpg
     ├── test_pdf.pdf
@@ -299,14 +343,20 @@ tests/
 ```
 
 #### Testing Guidelines
+- **CRITICAL**: Use test server for all integration tests, never production
 - Use pytest fixtures for common setup
-- Mock external HTTP calls with `responses` or `httpx`
+- Mock external HTTP calls with `responses` or `httpx` for unit tests
 - Test both success and error scenarios
 - Test edge cases and boundary conditions
 - Use parameterized tests for similar operations
 - Test async methods with `pytest-asyncio`
+- **Integration Tests**: Use `TestClient` from `test_config.py` for real server testing
+- **Test Data**: Use layered testing approach (create → test → cleanup)
+- **SSL Configuration**: Ensure `verify_ssl: false` for test server
 
-#### Example Test
+#### Example Tests
+
+**Unit Test (Mocked)**
 ```python
 import pytest
 from unittest.mock import AsyncMock
@@ -327,6 +377,40 @@ async def test_get_canvas_success():
     assert isinstance(canvas, Canvas)
     assert canvas.id == "canvas-123"
     assert canvas.name == "Test Canvas"
+```
+
+**Integration Test (Real Server)**
+```python
+import pytest
+from tests.test_config import TestClient, get_test_config
+
+@pytest.mark.asyncio
+async def test_canvas_operations_integration():
+    """Test canvas operations against test server."""
+    config = get_test_config()
+    
+    async with TestClient(config) as test_client:
+        client = test_client.client
+        
+        # Create canvas
+        canvas = await client.create_canvas({
+            "name": "Integration Test Canvas",
+            "description": "Test canvas for integration testing"
+        })
+        
+        assert canvas.name == "Integration Test Canvas"
+        
+        # Get canvas
+        retrieved_canvas = await client.get_canvas(canvas.id)
+        assert retrieved_canvas.id == canvas.id
+        
+        # Update canvas
+        updated_canvas = await client.update_canvas(canvas.id, {
+            "name": "Updated Test Canvas"
+        })
+        assert updated_canvas.name == "Updated Test Canvas"
+        
+        # Cleanup is automatic via TestClient context manager
 ```
 
 ### Documentation Best Practices
@@ -414,14 +498,17 @@ async def create_canvas(self, payload: Dict[str, Any]) -> Canvas:
 ### Before PR Submission
 - [ ] Code passes quality checks
 - [ ] Tests pass with >80% coverage
+- [ ] **CRITICAL**: Integration tests pass against test server
 - [ ] Documentation updated with docstrings
 - [ ] TASKS.md updated
 - [ ] Issue referenced
+- [ ] **CRITICAL**: Task number included in PR title and commit messages
 - [ ] Conventional commits used
 - [ ] No secrets in code
 - [ ] Error handling implemented
 - [ ] Type hints added
 - [ ] Pydantic models validated
+- [ ] Test server configuration verified
 
 ### Task Completion
 - [ ] Implementation working
@@ -471,8 +558,11 @@ black --check . -q
 mypy .
 pytest
 
+# Test server verification
+python tests/test_server_connection.py
+
 # PR creation and completion
-gh pr create --title "feat: description (Issue #X)" --body "implements Task X.X.X"
+gh pr create --title "feat: description (Task X.X.X) (Issue #X)" --body "implements Task X.X.X"
 gh pr merge {number} --squash --delete-branch
 
 # Task completion (in main branch)
