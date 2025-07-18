@@ -199,3 +199,58 @@ async def test_get_client_not_found():
     # Test that the exception is propagated
     with pytest.raises(Exception, match="Client not found"):
         await client.get_client("non-existent-client")
+
+
+@pytest.mark.asyncio
+async def test_list_canvas_video_inputs_success():
+    """Test successful retrieval of canvas video inputs."""
+    client = CanvusClient("https://test.com", "test-token")
+
+    # Mock the _request method
+    mock_response = [
+        {"id": "input-1", "name": "Camera 1", "type": "video_input"},
+        {"id": "input-2", "name": "Camera 2", "type": "video_input"},
+    ]
+    client._request = AsyncMock(return_value=mock_response)
+
+    # Test the method
+    result = await client.list_canvas_video_inputs("canvas-123")
+
+    # Verify the result
+    assert result == mock_response
+    assert len(result) == 2
+    assert result[0]["id"] == "input-1"
+    assert result[1]["id"] == "input-2"
+
+    # Verify the request was made correctly
+    client._request.assert_called_once_with("GET", "canvases/canvas-123/video-inputs")
+
+
+@pytest.mark.asyncio
+async def test_list_canvas_video_inputs_error():
+    """Test error handling when listing canvas video inputs fails."""
+    client = CanvusClient("https://test.com", "test-token")
+
+    # Mock the _request method to raise an exception
+    client._request = AsyncMock(side_effect=Exception("API Error"))
+
+    # Test that the exception is propagated
+    with pytest.raises(Exception, match="API Error"):
+        await client.list_canvas_video_inputs("canvas-123")
+
+
+@pytest.mark.asyncio
+async def test_list_canvas_video_inputs_empty():
+    """Test listing video inputs for canvas with no inputs."""
+    client = CanvusClient("https://test.com", "test-token")
+
+    # Mock the _request method to return empty list
+    mock_response = []
+    client._request = AsyncMock(return_value=mock_response)
+
+    # Test the method
+    result = await client.list_canvas_video_inputs("canvas-123")
+
+    # Verify the result
+    assert result == []
+    assert len(result) == 0

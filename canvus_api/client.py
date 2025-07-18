@@ -712,6 +712,20 @@ class CanvusClient:
         """Delete a video."""
         await self._request("DELETE", f"canvases/{canvas_id}/videos/{video_id}")
 
+    async def list_canvas_video_inputs(self, canvas_id: str) -> List[Dict[str, Any]]:
+        """List all video input widgets in a canvas.
+
+        Args:
+            canvas_id (str): The ID of the canvas to list video inputs for
+
+        Returns:
+            List[Dict[str, Any]]: List of video input widgets as dictionaries
+
+        Raises:
+            CanvusAPIError: If the request fails or canvas is not found
+        """
+        return await self._request("GET", f"canvases/{canvas_id}/video-inputs")
+
     async def list_pdfs(self, canvas_id: str) -> List[PDF]:
         """List all PDFs in a canvas."""
         return await self._request(
