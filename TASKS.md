@@ -322,7 +322,7 @@ This document lists all remaining tasks to complete the Canvus Python API implem
     6. Add docstring following Google format
     7. Add unit test
 
-- [ ] **Task 9.1.3**: Implement delete video input method
+- [🔄] **Task 9.1.3**: Implement delete video input method - Status: In Progress (Issue #66)
   - **Endpoint**: `DELETE /canvases/:id/video-inputs/:input_id`
   - **Method**: `delete_video_input(canvas_id: str, input_id: str) -> None`
   - **Implementation Steps**:
