@@ -333,7 +333,7 @@ This document lists all remaining tasks to complete the Canvus Python API implem
     5. Add docstring following Google format
     6. Add unit test
 
-- [ ] **Task 9.1.4**: Implement list client video inputs method
+- [🔄] **Task 9.1.4**: Implement list client video inputs method - Status: In Progress (Issue #68)
   - **Endpoint**: `GET /clients/:client_id/video-inputs`
   - **Method**: `list_client_video_inputs(client_id: str) -> List[Dict[str, Any]]`
   - **Implementation Steps**:
