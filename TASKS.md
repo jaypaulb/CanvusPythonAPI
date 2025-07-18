@@ -253,7 +253,7 @@ This document lists all remaining tasks to complete the Canvus Python API implem
     6. Add docstring following Google format
     7. Add unit test
 
-- [ ] **Task 7.2.2**: Implement list group members method
+- [🔄] **Task 7.2.2**: Implement list group members method - Status: In Progress (Issue #56)
   - **Endpoint**: `GET /groups/:id/members`
   - **Method**: `list_group_members(group_id: str) -> List[Dict[str, Any]]`
   - **Implementation Steps**:
