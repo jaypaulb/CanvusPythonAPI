@@ -108,3 +108,47 @@ async def test_list_group_members_empty_group():
     # Verify the result
     assert result == []
     assert len(result) == 0
+
+
+@pytest.mark.asyncio
+async def test_remove_user_from_group_success():
+    """Test successful removal of user from group."""
+    client = CanvusClient("https://test.com", "test-token")
+
+    # Mock the _request method
+    client._request = AsyncMock(return_value=None)
+
+    # Test the method
+    await client.remove_user_from_group("group-123", "user-456")
+
+    # Verify the request was made correctly
+    client._request.assert_called_once_with(
+        "DELETE", "groups/group-123/members/user-456"
+    )
+
+
+@pytest.mark.asyncio
+async def test_remove_user_from_group_error():
+    """Test error handling when removing user from group fails."""
+    client = CanvusClient("https://test.com", "test-token")
+
+    # Mock the _request method to raise an exception
+    client._request = AsyncMock(side_effect=Exception("API Error"))
+
+    # Test that the exception is propagated
+    with pytest.raises(Exception, match="API Error"):
+        await client.remove_user_from_group("group-123", "user-456")
+
+
+@pytest.mark.asyncio
+async def test_remove_user_from_group_validation():
+    """Test parameter validation for remove_user_from_group."""
+    client = CanvusClient("https://test.com", "test-token")
+
+    # Test with empty group_id
+    with pytest.raises(Exception):
+        await client.remove_user_from_group("", "user-456")
+
+    # Test with empty user_id
+    with pytest.raises(Exception):
+        await client.remove_user_from_group("group-123", "")
