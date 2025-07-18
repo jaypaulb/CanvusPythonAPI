@@ -265,7 +265,7 @@ This document lists all remaining tasks to complete the Canvus Python API implem
     6. Add docstring following Google format
     7. Add unit test
 
-- [ ] **Task 7.2.3**: Implement remove user from group method
+- [🔄] **Task 7.2.3**: Implement remove user from group method - Status: In Progress (Issue #58)
   - **Endpoint**: `DELETE /groups/:group_id/members/:user_id`
   - **Method**: `remove_user_from_group(group_id: str, user_id: str) -> None`
   - **Implementation Steps**:
