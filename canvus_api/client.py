@@ -1476,6 +1476,18 @@ class CanvusClient:
             "PATCH", f"users/{user_id}", response_model=User, json_data=payload
         )
 
+    # Group Operations
+    async def list_groups(self) -> List[Dict[str, Any]]:
+        """List all user groups.
+
+        Returns:
+            List[Dict[str, Any]]: List of groups with id, name, and description
+
+        Raises:
+            CanvusAPIError: If the request fails
+        """
+        return await self._request("GET", "groups")
+
     # Workspace Operations
     async def list_workspaces(self, client_id: str) -> List[Workspace]:
         """List all workspaces of a client.

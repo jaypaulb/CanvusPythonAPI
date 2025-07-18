@@ -472,6 +472,20 @@ async def test_color_presets_operations(client: CanvusClient, canvas_id: str) ->
         raise
 
 
+async def test_groups_operations(client: CanvusClient) -> None:
+    """Test groups operations."""
+    print_header("Testing Groups Operations")
+
+    try:
+        # List groups
+        groups = await client.list_groups()
+        print_success(f"Retrieved groups: {groups}")
+
+    except Exception as e:
+        print_error(f"Groups operations error: {e}")
+        raise
+
+
 async def setup_test_canvas(client: CanvusClient) -> Optional[str]:
     """Create a test canvas for resource testing."""
     try:
@@ -537,6 +551,7 @@ async def test_canvas_resources(client: CanvusClient, session: TestSession) -> N
         await test_pdf_operations(client, canvas.id)
         await test_widget_operations(client, canvas.id)
         await test_color_presets_operations(client, canvas.id)
+        await test_groups_operations(client)
     except Exception as e:
         print_error(f"{get_timestamp()} Canvas resource test error: {e}")
         raise
