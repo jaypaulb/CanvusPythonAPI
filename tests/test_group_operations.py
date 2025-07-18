@@ -152,3 +152,50 @@ async def test_remove_user_from_group_validation():
     # Test with empty user_id
     with pytest.raises(Exception):
         await client.remove_user_from_group("group-123", "")
+
+
+@pytest.mark.asyncio
+async def test_get_client_success():
+    """Test successful retrieval of client."""
+    client = CanvusClient("https://test.com", "test-token")
+
+    # Mock the _request method
+    mock_response = {"id": "client-123", "name": "Test Client", "status": "active"}
+    client._request = AsyncMock(return_value=mock_response)
+
+    # Test the method
+    result = await client.get_client("client-123")
+
+    # Verify the result
+    assert result == mock_response
+    assert result["id"] == "client-123"
+    assert result["name"] == "Test Client"
+
+    # Verify the request was made correctly
+    client._request.assert_called_once_with("GET", "clients/client-123")
+
+
+@pytest.mark.asyncio
+async def test_get_client_error():
+    """Test error handling when getting client fails."""
+    client = CanvusClient("https://test.com", "test-token")
+
+    # Mock the _request method to raise an exception
+    client._request = AsyncMock(side_effect=Exception("API Error"))
+
+    # Test that the exception is propagated
+    with pytest.raises(Exception, match="API Error"):
+        await client.get_client("client-123")
+
+
+@pytest.mark.asyncio
+async def test_get_client_not_found():
+    """Test getting a non-existent client."""
+    client = CanvusClient("https://test.com", "test-token")
+
+    # Mock the _request method to raise a not found error
+    client._request = AsyncMock(side_effect=Exception("Client not found"))
+
+    # Test that the exception is propagated
+    with pytest.raises(Exception, match="Client not found"):
+        await client.get_client("non-existent-client")
