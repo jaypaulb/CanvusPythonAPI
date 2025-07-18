@@ -1633,6 +1633,20 @@ class CanvusClient:
         """List all connected clients."""
         return await self._request("GET", "clients", response_model=None)
 
+    async def get_client(self, client_id: str) -> Dict[str, Any]:
+        """Get a specific client by ID.
+
+        Args:
+            client_id (str): The ID of the client to retrieve
+
+        Returns:
+            Dict[str, Any]: Client data as dictionary
+
+        Raises:
+            CanvusAPIError: If the request fails or client is not found
+        """
+        return await self._request("GET", f"clients/{client_id}")
+
     async def get_client_workspaces(self, client_id: str) -> List[Workspace]:
         """Get workspaces for a specific client."""
         return await self._request(
