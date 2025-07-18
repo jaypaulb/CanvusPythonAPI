@@ -989,6 +989,20 @@ class CanvusClient:
             "POST", f"canvases/{canvas_id}/background", data=form_data
         )
 
+    async def get_color_presets(self, canvas_id: str) -> Dict[str, Any]:
+        """Get color presets for a canvas.
+
+        Args:
+            canvas_id: The ID of the canvas
+
+        Returns:
+            Dict[str, Any]: Color presets data
+
+        Raises:
+            CanvusAPIError: If the request fails
+        """
+        return await self._request("GET", f"canvases/{canvas_id}/color-presets")
+
     async def get_anchor(self, canvas_id: str, anchor_id: str) -> Anchor:
         """Get details of a specific anchor."""
         return await self._request(
