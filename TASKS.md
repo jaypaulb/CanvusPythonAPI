@@ -166,7 +166,7 @@ This document lists all remaining tasks to complete the Canvus Python API implem
 ## 6. Canvas Color Presets - Missing Endpoints
 
 ### 6.1 Color Presets Management
-- [ ] **Task 6.1.1**: Implement get color presets method
+- [✅] **Task 6.1.1**: Implement get color presets method - Status: Completed (Issue #11)
   - **Endpoint**: `GET /canvases/:canvasId/color-presets`
   - **Method**: `get_color_presets(canvas_id: str) -> Dict[str, Any]`
   - **Implementation Steps**:
