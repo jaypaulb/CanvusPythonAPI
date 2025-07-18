@@ -1488,6 +1488,20 @@ class CanvusClient:
         """
         return await self._request("GET", "groups")
 
+    async def get_group(self, group_id: str) -> Dict[str, Any]:
+        """Get a single user group.
+
+        Args:
+            group_id (str): The ID of the group to retrieve
+
+        Returns:
+            Dict[str, Any]: Group data with id, name, and description
+
+        Raises:
+            CanvusAPIError: If the request fails or group is not found
+        """
+        return await self._request("GET", f"groups/{group_id}")
+
     # Workspace Operations
     async def list_workspaces(self, client_id: str) -> List[Workspace]:
         """List all workspaces of a client.
