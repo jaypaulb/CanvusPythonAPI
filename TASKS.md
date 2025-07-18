@@ -310,7 +310,7 @@ This document lists all remaining tasks to complete the Canvus Python API implem
     6. Add docstring following Google format
     7. Add unit test
 
-- [ ] **Task 9.1.2**: Implement create video input method
+- [🔄] **Task 9.1.2**: Implement create video input method - Status: In Progress (Issue #64)
   - **Endpoint**: `POST /canvases/:id/video-inputs`
   - **Method**: `create_video_input(canvas_id: str, payload: Dict[str, Any]) -> Dict[str, Any]`
   - **Implementation Steps**:
