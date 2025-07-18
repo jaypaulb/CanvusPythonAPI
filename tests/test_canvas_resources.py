@@ -488,14 +488,31 @@ async def test_groups_operations(client: CanvusClient) -> None:
             print_success(f"Retrieved group {group_id}: {group}")
 
         # Create a new group (admin only)
+        created_group_id = None
         try:
             new_group = await client.create_group({
                 "name": "Test Group",
                 "description": "A test group created by automated tests"
             })
+            created_group_id = new_group["id"]
             print_success(f"Created new group: {new_group}")
+
+            # Test add user to group (admin only)
+            # Note: This would require a valid user_id, so we'll just test the method call
+            # In a real scenario, you'd need to create a user first or use an existing user ID
+            try:
+                # This will likely fail without a valid user_id, but tests the method structure
+                await client.add_user_to_group(created_group_id, "test-user-id")
+                print_success(f"Added user to group: {created_group_id}")
+            except Exception as add_error:
+                print_warning(f"Could not add user to group (expected without valid user_id): {add_error}")
+
+            # Test delete group (admin only)
+            await client.delete_group(created_group_id)
+            print_success(f"Deleted group: {created_group_id}")
+
         except Exception as e:
-            print_warning(f"Could not create group (may not be admin): {e}")
+            print_warning(f"Could not perform admin group operations (may not be admin): {e}")
 
     except Exception as e:
         print_error(f"Groups operations error: {e}")

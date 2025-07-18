@@ -1518,6 +1518,33 @@ class CanvusClient:
         """
         return await self._request("POST", "groups", json_data=payload)
 
+    async def delete_group(self, group_id: str) -> None:
+        """Delete a user group.
+
+        Args:
+            group_id (str): The ID of the group to delete
+
+        Raises:
+            CanvusAPIError: If the request fails or group is not found
+        """
+        await self._request("DELETE", f"groups/{group_id}")
+
+    async def add_user_to_group(self, group_id: str, user_id: str) -> Dict[str, Any]:
+        """Add a user to a group.
+
+        Args:
+            group_id (str): The ID of the group to add the user to
+            user_id (str): The ID of the user to add to the group
+
+        Returns:
+            Dict[str, Any]: Response data from the API
+
+        Raises:
+            CanvusAPIError: If the request fails or validation fails
+        """
+        payload = {"user_id": user_id}
+        return await self._request("POST", f"groups/{group_id}/members", json_data=payload)
+
     # Workspace Operations
     async def list_workspaces(self, client_id: str) -> List[Workspace]:
         """List all workspaces of a client.

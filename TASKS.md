@@ -229,7 +229,7 @@ This document lists all remaining tasks to complete the Canvus Python API implem
     6. Add docstring following Google format
     7. Add unit test
 
-- [ ] **Task 7.1.4**: Implement delete group method
+- [🔄] **Task 7.1.4**: Implement delete group method - Status: In Progress (Issue #49)
   - **Endpoint**: `DELETE /groups/:id`
   - **Method**: `delete_group(group_id: str) -> None`
   - **Implementation Steps**:
@@ -241,7 +241,7 @@ This document lists all remaining tasks to complete the Canvus Python API implem
     6. Add unit test
 
 ### 7.2 Group Members Management
-- [ ] **Task 7.2.1**: Implement add user to group method
+- [🔄] **Task 7.2.1**: Implement add user to group method - Status: In Progress (Issue #50)
   - **Endpoint**: `POST /groups/:group_id/members`
   - **Method**: `add_user_to_group(group_id: str, user_id: str) -> Dict[str, Any]`
   - **Implementation Steps**:
