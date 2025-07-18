@@ -281,7 +281,7 @@ This document lists all remaining tasks to complete the Canvus Python API implem
 ## 8. Clients & Workspaces - Missing Endpoints
 
 ### 8.1 Client Management
-- [🔄] **Task 8.1.1**: Implement get client method - Status: In Progress (Issue #60)
+- [✅] **Task 8.1.1**: Implement get client method - Status: Completed (Issue #60)
   - **Endpoint**: `GET /clients/:id`
   - **Method**: `get_client(client_id: str) -> Dict[str, Any]`
   - **Implementation Steps**:
