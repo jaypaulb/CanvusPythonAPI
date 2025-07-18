@@ -742,6 +742,33 @@ class CanvusClient:
         """
         return await self._request("GET", f"canvases/{canvas_id}/video-inputs")
 
+    async def create_video_input(self, canvas_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+        """Create a new video input widget in a canvas.
+
+        Args:
+            canvas_id (str): The ID of the canvas
+            payload (Dict[str, Any]): Video input creation data including:
+                - name (str): Name of the video input
+                - source (str): Video source identifier
+                - location (Dict[str, float]): Widget position {"x": float, "y": float}
+                - size (Dict[str, float]): Widget dimensions {"width": float, "height": float}
+                - config (Dict[str, Any], optional): Custom configuration for the video input
+                - depth (int, optional): Z-order depth
+                - scale (float, optional): Scale factor
+                - pinned (bool, optional): Whether widget is pinned
+
+        Returns:
+            Dict[str, Any]: The created video input widget data
+
+        Raises:
+            CanvusAPIError: If video input creation fails
+        """
+        return await self._request(
+            "POST",
+            f"canvases/{canvas_id}/video-inputs",
+            json_data=payload,
+        )
+
     async def list_pdfs(self, canvas_id: str) -> List[PDF]:
         """List all PDFs in a canvas."""
         return await self._request(
