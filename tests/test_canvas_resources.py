@@ -488,14 +488,21 @@ async def test_groups_operations(client: CanvusClient) -> None:
             print_success(f"Retrieved group {group_id}: {group}")
 
         # Create a new group (admin only)
+        created_group_id = None
         try:
             new_group = await client.create_group({
                 "name": "Test Group",
                 "description": "A test group created by automated tests"
             })
+            created_group_id = new_group["id"]
             print_success(f"Created new group: {new_group}")
+
+            # Test delete group (admin only)
+            await client.delete_group(created_group_id)
+            print_success(f"Deleted group: {created_group_id}")
+
         except Exception as e:
-            print_warning(f"Could not create group (may not be admin): {e}")
+            print_warning(f"Could not perform admin group operations (may not be admin): {e}")
 
     except Exception as e:
         print_error(f"Groups operations error: {e}")
