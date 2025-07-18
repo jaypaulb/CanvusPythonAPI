@@ -481,6 +481,12 @@ async def test_groups_operations(client: CanvusClient) -> None:
         groups = await client.list_groups()
         print_success(f"Retrieved groups: {groups}")
 
+        # Get a specific group if groups exist
+        if groups:
+            group_id = groups[0]["id"]
+            group = await client.get_group(str(group_id))
+            print_success(f"Retrieved group {group_id}: {group}")
+
     except Exception as e:
         print_error(f"Groups operations error: {e}")
         raise
