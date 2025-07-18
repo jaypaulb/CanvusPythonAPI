@@ -194,7 +194,7 @@ This document lists all remaining tasks to complete the Canvus Python API implem
 ## 7. Groups - Missing Endpoints
 
 ### 7.1 Groups Management
-- [🔄] **Task 7.1.1**: Implement list groups method - Status: In Progress (Issue #14)
+- [✅] **Task 7.1.1**: Implement list groups method - Status: Completed (Issue #14)
   - **Endpoint**: `GET /groups`
   - **Method**: `list_groups() -> List[Dict[str, Any]]`
   - **Implementation Steps**:
