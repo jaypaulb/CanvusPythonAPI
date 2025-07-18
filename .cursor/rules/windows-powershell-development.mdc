@@ -132,6 +132,13 @@ try {
 - Use `git commit -m "message"` for commits
 - Use `git push` for pushing changes
 
+#### Collaborative Workflow Commands
+- Use `git checkout main` to switch to main branch
+- Use `git pull origin main` to get latest changes
+- Use `git checkout -b feature/{issue-number}-description` to create feature branches
+- Use `git rebase main` to update feature branch with latest main
+- Use `git push --force-with-lease` for safe force pushes after rebase
+
 #### PowerShell Git Aliases
 ```powershell
 # Common git aliases for PowerShell

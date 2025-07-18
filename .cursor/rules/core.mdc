@@ -151,6 +151,7 @@ Consult the user **only when**:
 - **Complete development cycles** — Execute full workflow: create → implement → test → merge → close without interruption.
 - **Pattern-following discipline** — Follow established architectural patterns and conventions to ensure consistency and reduce implementation time.
 - **Autonomous task progression** — Continue to next available task without user intervention when current task is complete.
+- **Collaborative workflow discipline** — Follow main branch first approach for task management in multi-agent scenarios.
 
 ---
 
