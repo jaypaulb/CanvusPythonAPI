@@ -2,52 +2,160 @@
 
 ## Core Workflow Rules
 
-### Task Selection
-- Open TASKS.md, find first unchecked task `- [ ]`
-- Work on one task at a time, no parallel tasks
-- Do not skip phases or tasks
-- Follow the implementation roadmap in PRD.md
+### Task Selection & Collaborative Workflow
+**CRITICAL: Follow this exact sequence to ensure robust multi-agent collaboration**
+
+1. **Start on main branch and pull latest**:
+   ```bash
+   git checkout main
+   git pull origin main
+   ```
+
+2. **Find next available task**:
+   - Open TASKS.md, find first unchecked task `- [ ]`
+   - Work on one task at a time, no parallel tasks
+   - Do not skip phases or tasks
+
+3. **Check for existing issues**:
+   ```bash
+   gh issue list --state open
+   ```
+   - Search for existing issues with similar task descriptions
+   - If issue exists, use existing issue number
+   - If no issue exists, create new one: `gh issue create --title "Task X.X.X: description" --body "requirements"`
+
+4. **Check for existing branches**:
+   ```bash
+   git branch -a | grep "feature/{issue-number}"
+   ```
+   - If branch exists, switch to it: `git checkout feature/{issue-number}-description`
+   - If branch doesn't exist, create new one: `git checkout -b feature/{issue-number}-description`
+
+5. **Update TASKS.md in main branch FIRST**:
+   ```bash
+   git checkout main
+   # Edit TASKS.md: - [🔄] Task X.X.X: description - Status: In Progress (Issue #X)
+   git add TASKS.md
+   git commit -m "docs(tasks): mark Task X.X.X as in progress (Issue #X)"
+   git push origin main
+   ```
+
+6. **Create/switch to feature branch**:
+   ```bash
+   git checkout -b feature/{issue-number}-description
+   ```
+   - This ensures the branch has the updated TASKS.md from main
 
 ### Issue Management
-- Check existing issues: `gh issue list`
-- Create issue before any work: `gh issue create --title "Task X.X.X: description" --body "requirements"`
-- Note issue number, create branch: `git checkout -b feature/{issue-number}-description`
+- Check existing issues: `gh issue list --state open`
+- Search for similar issues before creating new ones
+- If issue for task does not exist: `gh issue create --title "Task X.X.X: description" --body "requirements"`
 - Add comments to issues: `gh issue comment {number} --body "comment message"`
 - Close issues with comment: `gh issue comment {number} --body "completion summary" && gh issue close {number}`
 
 ### Task Status Updates
-- Update TASKS.md immediately when starting: `- [🔄] Task X.X.X: description - Status: In Progress (Issue #X)`
-- Commit status change: `git commit -m "docs(tasks): mark Task X.X.X as in progress (Issue #X)"`
+- **CRITICAL**: Update TASKS.md in main branch first, then create feature branch
 - Update TASKS.md when complete: `- [✅] Task X.X.X: description - Status: Completed (Issue #X)`
 
 ### Implementation Rules
 - Commit frequently with conventional commits: `{type}({scope}): {description}`
 - Test incrementally: Run quality checks individually:
-  - `ruff check .`
-  - `black --check .`
+  - `ruff check . -q`
+  - `black --check . -q`
   - `mypy .`
   - `pytest`
 - Document all public functions/classes with Google-style docstrings
 - Follow Python API library best practices
 
 ### Blocker Protocol
-- Document blocker in issue: `gh issue comment {number} --body "blocker details"`
-- Mark issue with labels: `gh issue edit {number} --add-label "blocked"`
-- Update TASKS.md: `- [🚫] Task X.X.X: description - Status: Blocked (Issue #X)`
-- Move to next available task immediately
+**CRITICAL: Follow this exact sequence when blocked to ensure task state is properly managed in main branch**
+
+1. **Document blocker thoroughly in issue**: 
+   ```bash
+   gh issue comment {number} --body "BLOCKER: [detailed description of the problem]
+   
+   Error details: [specific error messages]
+   Attempted solutions: [what was tried]
+   Current state: [what's preventing progress]
+   Required resources: [what's needed to unblock]"
+   ```
+
+2. **Switch to main branch**:
+   ```bash
+   git checkout main
+   ```
+
+3. **Update TASKS.md to mark task as blocked**:
+   ```bash
+   # Edit TASKS.md: - [🚫] Task X.X.X: description - Status: Blocked (Issue #X)
+   git add TASKS.md
+   git commit -m "docs(tasks): mark Task X.X.X as blocked (Issue #X)"
+   ```
+
+4. **Pull latest main**:
+   ```bash
+   git pull origin main
+   ```
+
+5. **Move to next available task immediately**:
+   - Find next unchecked task in TASKS.md
+   - Create new issue if needed
+   - Start new branch for next task
+
+**Objective**: Ensure blocked tasks are properly documented in main branch so other agents can see the current state and avoid conflicts when working simultaneously.
+
+### Conflict Resolution & Collaboration
+**CRITICAL: Handle conflicts gracefully to maintain workflow integrity**
+
+1. **If TASKS.md has conflicts**:
+   ```bash
+   git checkout main
+   git pull origin main
+   # Resolve conflicts in TASKS.md manually
+   git add TASKS.md
+   git commit -m "docs(tasks): resolve conflicts"
+   git push origin main
+   ```
+
+2. **If feature branch is behind main**:
+   ```bash
+   git checkout feature/{issue-number}-description
+   git rebase main
+   # Resolve any conflicts
+   git push --force-with-lease origin feature/{issue-number}-description
+   ```
+
+3. **If someone else is working on same task**:
+   - Check issue comments for updates
+   - Coordinate via issue comments
+   - Consider switching to next available task if conflict persists
+
+4. **Always verify task status before starting**:
+   ```bash
+   git checkout main
+   git pull origin main
+   # Check TASKS.md for current status
+   # Check existing issues and branches
+   ```
 
 ### Completion Process
 - Final quality check: Run each check individually to identify specific issues:
-  - `ruff check .`
-  - `black --check .`
+  - `ruff check . -q`
+  - `black --check . -q`
   - `mypy .`
   - `pytest`
 - Add completion comment to issue: `gh issue comment {number} --body "Task completed. See PR for details."`
-- Update TASKS.md as completed
 - Create PR: `gh pr create --title "feat: description (Issue #X)" --body "implements Task X.X.X"`
 - **CRITICAL: Self-merge if no issues found**: `gh pr merge {number} --squash --delete-branch`
 - **CRITICAL: Close issue after merge**: `gh issue close {number}`
 - **CRITICAL: Switch back to main**: `git checkout main && git pull origin main`
+- **CRITICAL: Update TASKS.md in main branch**: 
+  ```bash
+  # Edit TASKS.md: - [✅] Task X.X.X: description - Status: Completed (Issue #X)
+  git add TASKS.md
+  git commit -m "docs(tasks): mark Task X.X.X as completed (Issue #X)"
+  git push origin main
+  ```
 - Verify completion: Check PR status and issue closure
 
 ## Python API Library Best Practices
@@ -329,26 +437,51 @@ async def create_canvas(self, payload: Dict[str, Any]) -> Canvas:
 ## Commands Reference
 
 ```bash
+# Collaborative workflow
+git checkout main
+git pull origin main
+gh issue list --state open
+git branch -a | grep "feature/{issue-number}"
+
 # Issue management
 gh issue create --title "Task X.X.X: description" --body "requirements"
-gh issue list
+gh issue list --state open
 gh issue comment {number} --body "comment message"
 gh issue close {number}
 gh issue edit {number} --add-label "blocked"
+
+# Task status management (in main branch)
+git checkout main
+# Edit TASKS.md: - [🔄] Task X.X.X: description - Status: In Progress (Issue #X)
+git add TASKS.md
+git commit -m "docs(tasks): mark Task X.X.X as in progress (Issue #X)"
+git push origin main
 
 # Branch management
 git checkout -b feature/{issue-number}-description
 git checkout main && git pull origin main
 
+# Conflict resolution
+git rebase main
+git push --force-with-lease origin feature/{issue-number}-description
+
 # Quality checks (run individually)
-ruff check .
-black --check .
+ruff check . -q
+black --check . -q
 mypy .
 pytest
 
 # PR creation and completion
 gh pr create --title "feat: description (Issue #X)" --body "implements Task X.X.X"
 gh pr merge {number} --squash --delete-branch
+
+# Task completion (in main branch)
+git checkout main
+git pull origin main
+# Edit TASKS.md: - [✅] Task X.X.X: description - Status: Completed (Issue #X)
+git add TASKS.md
+git commit -m "docs(tasks): mark Task X.X.X as completed (Issue #X)"
+git push origin main
 
 # Release management
 git tag v1.2.0
@@ -368,6 +501,8 @@ gh release create v1.2.0 --title "Release v1.2.0" --notes "Release notes"
 - Handle blockers per protocol
 - Use type hints for all public methods
 - Validate inputs with Pydantic models
+- Avoid bother the user unless absolutely required
+- Operate autonomously with minimal user input
 
 ### SHOULD (Recommended)
 - Use TDD where practical
@@ -377,7 +512,6 @@ gh release create v1.2.0 --title "Release v1.2.0" --notes "Release notes"
 - Update examples in EXAMPLES.md
 
 ### COULD (Optional)
-- Use chat for quick questions
 - Add performance tests
 - Create additional documentation
 - Add more comprehensive examples
@@ -387,6 +521,4 @@ gh release create v1.2.0 --title "Release v1.2.0" --notes "Release notes"
 - TASKS.md is single source of truth
 - Issue numbers must be referenced in commits/PRs
 - Status indicators: 🔄 (in progress), ✅ (completed), 🚫 (blocked)
-- Move to next task immediately when blocked
-- Document thoroughly, then continue working
 - Follow Python API library best practices for maintainability 
