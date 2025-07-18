@@ -298,7 +298,7 @@ This document lists all remaining tasks to complete the Canvus Python API implem
 ## 9. Video Inputs & Outputs - Missing Endpoints
 
 ### 9.1 Video Inputs Management
-- [🔄] **Task 9.1.1**: Implement list canvas video inputs method - Status: In Progress (Issue #62)
+- [✅] **Task 9.1.1**: Implement list canvas video inputs method - Status: Completed (Issue #62)
   - **Endpoint**: `GET /canvases/:id/video-inputs`
   - **Method**: `list_canvas_video_inputs(canvas_id: str) -> List[Dict[str, Any]]`
   - **Implementation Steps**:
