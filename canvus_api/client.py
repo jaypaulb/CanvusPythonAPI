@@ -1003,6 +1003,25 @@ class CanvusClient:
         """
         return await self._request("GET", f"canvases/{canvas_id}/color-presets")
 
+    async def update_color_presets(
+        self, canvas_id: str, payload: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """Update color presets for a canvas.
+
+        Args:
+            canvas_id (str): The ID of the canvas
+            payload (Dict[str, Any]): Color presets configuration data
+
+        Returns:
+            Dict[str, Any]: Updated color presets data
+
+        Raises:
+            CanvusAPIError: If the color presets update fails
+        """
+        return await self._request(
+            "PATCH", f"canvases/{canvas_id}/color-presets", json_data=payload
+        )
+
     async def get_anchor(self, canvas_id: str, anchor_id: str) -> Anchor:
         """Get details of a specific anchor."""
         return await self._request(
@@ -1380,6 +1399,29 @@ class CanvusClient:
         """
         payload = {"token": token} if token else None
         await self._request("POST", "users/logout", json_data=payload)
+
+    async def get_current_user(self) -> User:
+        """Get information about the currently authenticated user.
+
+        This method validates the current token and returns the user information.
+
+        Returns:
+            User: Current user information
+
+        Raises:
+            CanvusAPIError: If authentication fails or token is invalid
+        """
+        # Use the login method with the current token to validate and get user info
+        response = await self.login(token=self.api_key)
+        
+        # The login response should contain user information
+        if "user" in response:
+            return User.model_validate(response["user"])
+        elif "id" in response:
+            # If the response itself is user data
+            return User.model_validate(response)
+        else:
+            raise CanvusAPIError("Unable to extract user information from login response")
 
     async def block_user(self, user_id: int) -> User:
         """Block a user from signing in.

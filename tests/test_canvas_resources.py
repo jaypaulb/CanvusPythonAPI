@@ -443,6 +443,35 @@ async def test_widget_operations(client: CanvusClient, canvas_id: str) -> None:
                 pass
 
 
+async def test_color_presets_operations(client: CanvusClient, canvas_id: str) -> None:
+    """Test color presets operations."""
+    print_header("Testing Color Presets Operations")
+
+    try:
+        # Get current color presets
+        presets = await client.get_color_presets(canvas_id)
+        print_success(f"Retrieved color presets: {presets}")
+
+        # Update color presets
+        update_payload = {
+            "primary_color": "#ff0000",
+            "secondary_color": "#00ff00",
+            "accent_color": "#0000ff",
+            "background_color": "#ffffff",
+            "text_color": "#000000"
+        }
+        updated_presets = await client.update_color_presets(canvas_id, update_payload)
+        print_success(f"Updated color presets: {updated_presets}")
+
+        # Verify the update
+        verify_presets = await client.get_color_presets(canvas_id)
+        print_success(f"Verified color presets: {verify_presets}")
+
+    except Exception as e:
+        print_error(f"Color presets operations error: {e}")
+        raise
+
+
 async def setup_test_canvas(client: CanvusClient) -> Optional[str]:
     """Create a test canvas for resource testing."""
     try:
@@ -507,6 +536,7 @@ async def test_canvas_resources(client: CanvusClient, session: TestSession) -> N
         await test_video_operations(client, canvas.id)
         await test_pdf_operations(client, canvas.id)
         await test_widget_operations(client, canvas.id)
+        await test_color_presets_operations(client, canvas.id)
     except Exception as e:
         print_error(f"{get_timestamp()} Canvas resource test error: {e}")
         raise
