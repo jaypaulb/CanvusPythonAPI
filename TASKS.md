@@ -217,7 +217,7 @@ This document lists all remaining tasks to complete the Canvus Python API implem
     6. Add docstring following Google format
     7. Add unit test
 
-- [🔄] **Task 7.1.3**: Implement create group method - Status: In Progress (Issue #16)
+- [✅] **Task 7.1.3**: Implement create group method - Status: Completed (Issue #16)
   - **Endpoint**: `POST /groups`
   - **Method**: `create_group(payload: Dict[str, Any]) -> Dict[str, Any]`
   - **Implementation Steps**:
