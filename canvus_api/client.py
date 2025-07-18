@@ -1549,6 +1549,20 @@ class CanvusClient:
             "POST", f"groups/{group_id}/members", json_data=payload
         )
 
+    async def list_group_members(self, group_id: str) -> List[Dict[str, Any]]:
+        """List all members of a group.
+
+        Args:
+            group_id (str): The ID of the group to list members for
+
+        Returns:
+            List[Dict[str, Any]]: List of group members as dictionaries
+
+        Raises:
+            CanvusAPIError: If the request fails or group is not found
+        """
+        return await self._request("GET", f"groups/{group_id}/members")
+
     # Workspace Operations
     async def list_workspaces(self, client_id: str) -> List[Workspace]:
         """List all workspaces of a client.
