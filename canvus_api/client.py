@@ -1563,6 +1563,18 @@ class CanvusClient:
         """
         return await self._request("GET", f"groups/{group_id}/members")
 
+    async def remove_user_from_group(self, group_id: str, user_id: str) -> None:
+        """Remove a user from a group.
+
+        Args:
+            group_id (str): The ID of the group to remove the user from
+            user_id (str): The ID of the user to remove from the group
+
+        Raises:
+            CanvusAPIError: If the request fails, group/user not found, or user not in group
+        """
+        await self._request("DELETE", f"groups/{group_id}/members/{user_id}")
+
     # Workspace Operations
     async def list_workspaces(self, client_id: str) -> List[Workspace]:
         """List all workspaces of a client.
