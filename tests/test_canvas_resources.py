@@ -458,7 +458,7 @@ async def test_color_presets_operations(client: CanvusClient, canvas_id: str) ->
             "secondary_color": "#00ff00",
             "accent_color": "#0000ff",
             "background_color": "#ffffff",
-            "text_color": "#000000"
+            "text_color": "#000000",
         }
         updated_presets = await client.update_color_presets(canvas_id, update_payload)
         print_success(f"Updated color presets: {updated_presets}")
@@ -490,19 +490,34 @@ async def test_groups_operations(client: CanvusClient) -> None:
         # Create a new group (admin only)
         created_group_id = None
         try:
-            new_group = await client.create_group({
-                "name": "Test Group",
-                "description": "A test group created by automated tests"
-            })
+            new_group = await client.create_group(
+                {
+                    "name": "Test Group",
+                    "description": "A test group created by automated tests",
+                }
+            )
             created_group_id = new_group["id"]
             print_success(f"Created new group: {new_group}")
+
+            # Test add user to group (admin only)
+            try:
+                # Get current user to add to group
+                current_user = await client.get_current_user()
+                result = await client.add_user_to_group(
+                    created_group_id, str(current_user.id)
+                )
+                print_success(f"Added user to group: {result}")
+            except Exception as e:
+                print_warning(f"Could not add user to group (may not be admin): {e}")
 
             # Test delete group (admin only)
             await client.delete_group(created_group_id)
             print_success(f"Deleted group: {created_group_id}")
 
         except Exception as e:
-            print_warning(f"Could not perform admin group operations (may not be admin): {e}")
+            print_warning(
+                f"Could not perform admin group operations (may not be admin): {e}"
+            )
 
     except Exception as e:
         print_error(f"Groups operations error: {e}")

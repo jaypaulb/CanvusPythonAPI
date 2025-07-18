@@ -1413,7 +1413,7 @@ class CanvusClient:
         """
         # Use the login method with the current token to validate and get user info
         response = await self.login(token=self.api_key)
-        
+
         # The login response should contain user information
         if "user" in response:
             return User.model_validate(response["user"])
@@ -1421,7 +1421,9 @@ class CanvusClient:
             # If the response itself is user data
             return User.model_validate(response)
         else:
-            raise CanvusAPIError("Unable to extract user information from login response")
+            raise CanvusAPIError(
+                "Unable to extract user information from login response"
+            )
 
     async def block_user(self, user_id: int) -> User:
         """Block a user from signing in.
@@ -1528,6 +1530,24 @@ class CanvusClient:
             CanvusAPIError: If the request fails or group is not found
         """
         await self._request("DELETE", f"groups/{group_id}")
+
+    async def add_user_to_group(self, group_id: str, user_id: str) -> Dict[str, Any]:
+        """Add a user to a group.
+
+        Args:
+            group_id (str): The ID of the group to add the user to
+            user_id (str): The ID of the user to add to the group
+
+        Returns:
+            Dict[str, Any]: Response data from the API
+
+        Raises:
+            CanvusAPIError: If the request fails, group/user not found, or user already in group
+        """
+        payload = {"user_id": user_id}
+        return await self._request(
+            "POST", f"groups/{group_id}/members", json_data=payload
+        )
 
     # Workspace Operations
     async def list_workspaces(self, client_id: str) -> List[Workspace]:
