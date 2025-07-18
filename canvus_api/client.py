@@ -1502,6 +1502,22 @@ class CanvusClient:
         """
         return await self._request("GET", f"groups/{group_id}")
 
+    async def create_group(self, payload: Dict[str, Any]) -> Dict[str, Any]:
+        """Create a new user group.
+
+        Args:
+            payload (Dict[str, Any]): Group creation data containing:
+                - name (str): Name of the group (required)
+                - description (str, optional): Description of the group
+
+        Returns:
+            Dict[str, Any]: Created group data with id, name, and description
+
+        Raises:
+            CanvusAPIError: If the request fails or validation fails
+        """
+        return await self._request("POST", "groups", json_data=payload)
+
     # Workspace Operations
     async def list_workspaces(self, client_id: str) -> List[Workspace]:
         """List all workspaces of a client.
