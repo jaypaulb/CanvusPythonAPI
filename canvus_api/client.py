@@ -769,6 +769,21 @@ class CanvusClient:
             json_data=payload,
         )
 
+    async def delete_video_input(self, canvas_id: str, input_id: str) -> None:
+        """Delete a video input widget from a canvas.
+
+        Args:
+            canvas_id (str): The ID of the canvas
+            input_id (str): The ID of the video input to delete
+
+        Raises:
+            CanvusAPIError: If video input deletion fails or video input is not found
+        """
+        await self._request(
+            "DELETE",
+            f"canvases/{canvas_id}/video-inputs/{input_id}",
+        )
+
     async def list_pdfs(self, canvas_id: str) -> List[PDF]:
         """List all PDFs in a canvas."""
         return await self._request(

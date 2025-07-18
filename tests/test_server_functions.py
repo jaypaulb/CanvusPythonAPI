@@ -390,9 +390,36 @@ async def test_video_input_operations(client: CanvusClient) -> None:
         else:
             print_warning("Video input not found in updated list")
 
+        # Test video input deletion
+        if video_input_id:
+            await client.delete_video_input(canvas_id, video_input_id)
+            print_success(f"Deleted video input: {video_input_id}")
+
+            # Verify deletion by listing again
+            final_video_inputs = await client.list_canvas_video_inputs(canvas_id)
+            print_success(f"Found {len(final_video_inputs)} video inputs after deletion")
+
+            # Verify our deleted video input is not in the list
+            still_found = False
+            for vi in final_video_inputs:
+                if vi.get("id") == video_input_id:
+                    still_found = True
+                    break
+            
+            if not still_found:
+                print_success("Verified video input was deleted")
+            else:
+                print_error("Video input still exists after deletion")
+
     except Exception as e:
         print_error(f"Video input operations error: {e}")
-        # Note: Video input deletion might not be implemented yet, so we don't clean up
+        # Clean up if we created a video input but deletion failed
+        if video_input_id and canvas_id:
+            try:
+                await client.delete_video_input(canvas_id, video_input_id)
+                print_success("Cleaned up video input after error")
+            except Exception:
+                pass
 
 
 async def test_server_functions(client: CanvusClient) -> None:
