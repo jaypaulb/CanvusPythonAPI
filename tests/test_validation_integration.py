@@ -11,6 +11,7 @@ from typing import Dict, Any
 
 from canvus_api import CanvusClient
 from tests.test_config import get_test_config
+from tests.test_client_manager import setup_test_client, cleanup_test_client
 
 
 async def test_list_client_video_outputs_integration():
@@ -46,6 +47,7 @@ async def test_list_client_video_outputs_integration():
                     if ("404" in error_msg or "not found" in error_msg.lower() or 
                         "offline" in error_msg.lower()):
                         print("✅ Method structure is correct - returns expected error for non-existent client")
+                        print("⚠️  WARNING: No clients available for full integration testing")
                         return True
                     else:
                         print(f"❌ Unexpected error with mock client: {mock_error}")
@@ -121,6 +123,7 @@ async def test_set_video_output_source_integration():
                     if ("404" in error_msg or "not found" in error_msg.lower() or 
                         "offline" in error_msg.lower()):
                         print("✅ Method structure is correct - returns expected error for non-existent client")
+                        print("⚠️  WARNING: No clients available for full integration testing")
                         return True
                     else:
                         print(f"❌ Unexpected error with mock client: {mock_error}")
@@ -256,6 +259,9 @@ async def run_validation_tests():
     print("🚀 Starting Integration Validation Tests")
     print("=" * 50)
     
+    # Set up test client environment
+    client_manager = await setup_test_client()
+    
     tests = [
         ("list_client_video_outputs", test_list_client_video_outputs_integration),
         ("set_video_output_source", test_set_video_output_source_integration),
@@ -290,6 +296,10 @@ async def run_validation_tests():
             passed += 1
     
     print(f"\n🎯 Summary: {passed}/{total} tests passed")
+    
+    # Clean up test client environment
+    if client_manager:
+        await cleanup_test_client(client_manager)
     
     if passed == total:
         print("🎉 All validation tests passed! Methods are working correctly.")
