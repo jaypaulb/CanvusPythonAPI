@@ -92,6 +92,7 @@ class Canvas(BaseModel):
     state: str
     description: Optional[str] = None
     link_permission: Optional[str] = None
+    owner_id: Optional[int] = None
     created_at: Optional[datetime] = None
     modified_at: Optional[datetime] = None
 

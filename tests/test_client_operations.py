@@ -6,6 +6,7 @@ import sys
 import asyncio
 from pathlib import Path
 import time
+from typing import Dict, Any
 from canvus_api import CanvusClient
 from .test_utils import (
     print_success,
@@ -89,20 +90,21 @@ async def test_client_discovery(client: CanvusClient) -> str:
         # Check each client for admin user
         for client_info in clients:
             try:
-                workspaces = await client.get_client_workspaces(client_info["id"])
+                client_id = client_info["id"]  # type: ignore[index]
+                workspaces = await client.get_client_workspaces(client_id)
                 for workspace in workspaces:
                     if workspace.user == "admin@local.local":
-                        print_success(f"Found admin client: {client_info['id']}")
-                        return client_info["id"]
+                        print_success(f"Found admin client: {client_id}")
+                        return client_id
             except Exception:
                 continue
 
         print_error("No admin client found")
-        return None
+        return ""
 
     except Exception as e:
         print_error(f"Client discovery error: {e}")
-        return None
+        return ""
 
 
 async def test_workspace_operations(client: CanvusClient, client_id: str) -> None:
@@ -177,7 +179,7 @@ async def test_workspace_operations(client: CanvusClient, client_id: str) -> Non
             print_success("Test canvas opened successfully")
 
             # 4. Save original workspace settings
-            original_settings = {
+            original_settings: Dict[str, Any] = {
                 "pinned": workspace.pinned,
                 "info_panel_visible": workspace.info_panel_visible,
                 "view_rectangle": {

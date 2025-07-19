@@ -97,7 +97,7 @@ async def cleanup_resources(client: CanvusClient, session: TestSession) -> None:
                     )
 
             # Delete test token
-            if session.token_id:
+            if session.token_id and session.user_id:
                 try:
                     await client.delete_token(session.user_id, session.token_id)
                     print_success(
@@ -107,11 +107,14 @@ async def cleanup_resources(client: CanvusClient, session: TestSession) -> None:
                     print_warning(f"{get_timestamp()} Failed to delete token: {e}")
 
             # Delete test user
-            try:
-                await client.delete_user(session.user_id)
-                print_success(f"{get_timestamp()} Deleted test user: {session.user_id}")
-            except Exception as e:
-                print_warning(f"{get_timestamp()} Failed to delete user: {e}")
+            if session.user_id:
+                try:
+                    await client.delete_user(session.user_id)
+                    print_success(
+                        f"{get_timestamp()} Deleted test user: {session.user_id}"
+                    )
+                except Exception as e:
+                    print_warning(f"{get_timestamp()} Failed to delete user: {e}")
 
         except Exception as e:
             print_error(f"{get_timestamp()} Cleanup error: {e}")
@@ -150,6 +153,8 @@ async def create_test_user(
     # Create new test user
     user = await client.create_user(user_data)
     user_id = user.id
+    if user_id is None:
+        raise ValueError("Failed to create user: user ID is None")
     print_success(f"{get_timestamp()} Created non-admin test user: {user_id}")
 
     # Verify the user is not an admin

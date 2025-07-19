@@ -13,7 +13,7 @@ from typing import Dict, Any, Optional, List
 try:
     import psutil
 except ImportError:
-    psutil = None
+    psutil = None  # type: ignore
 
 from canvus_api import CanvusClient
 from tests.test_config import get_test_config

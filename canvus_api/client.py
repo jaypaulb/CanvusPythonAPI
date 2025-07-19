@@ -90,8 +90,8 @@ class CanvusClient:
         *,
         response_model: Optional[Type] = None,
         params: Optional[Dict[str, Any]] = None,
-        json_data: Optional[Dict[str, Any]] = None,
-        data: Optional[Dict[str, Any]] = None,
+        json_data: Optional[Union[Dict[str, Any], str]] = None,
+        data: Optional[Union[Dict[str, Any], Any]] = None,
         headers: Optional[Dict[str, Any]] = None,
         return_binary: bool = False,
         stream: bool = False,
@@ -197,8 +197,8 @@ class CanvusClient:
         *,
         response_model: Optional[Type[T]] = None,
         params: Optional[Dict[str, Any]] = None,
-        callback: Optional[Callable[[Union[T, Dict[str, Any]]], None]] = None,
-    ) -> AsyncGenerator[Union[T, Dict[str, Any]], None]:
+        callback: Optional[Callable[[T], None]] = None,
+    ) -> AsyncGenerator[T, None]:
         """Subscribe to a streaming endpoint.
 
         Args:
@@ -1047,12 +1047,40 @@ class CanvusClient:
             ...     print(f"Annotation update: {annotation_update}")
             ...     # Process the annotation update
         """
-        async for update in self.subscribe(
-            f"canvases/{canvas_id}/widgets",
-            params={"annotations": "1"},
-            callback=callback,
-        ):
-            yield update
+        # Add subscribe=true to params
+        params = {"annotations": "1", "subscribe": "true"}
+
+        # Make streaming request
+        response = await self._request(
+            "GET", f"canvases/{canvas_id}/widgets", params=params, stream=True
+        )
+
+        try:
+            # Process the stream
+            async for line in response.content:
+                if not line:
+                    continue
+
+                try:
+                    # Parse JSON data
+                    data = json.loads(line)
+
+                    # Call callback if provided
+                    if callback:
+                        callback(data)
+
+                    yield data
+
+                except json.JSONDecodeError as e:
+                    print(f"Failed to parse JSON from stream: {e}")
+                    continue
+                except Exception as e:
+                    print(f"Error processing stream data: {e}")
+                    continue
+
+        finally:
+            # Ensure response is closed
+            await response.release()
 
     # Canvas Background Operations
     async def get_canvas_background(self, canvas_id: str) -> Dict[str, Any]:
@@ -2254,25 +2282,57 @@ class CanvusClient:
         Yields:
             Union[Note, Image, Browser, Video, PDF, Widget]: Stream of widget updates
         """
-        async for update in self.subscribe(
-            f"canvases/{canvas_id}/widgets",
-            params={"subscribe": "true"},
-            callback=callback,
-        ):
-            # Determine widget type and validate accordingly
-            widget_type = update.get("type")
-            if widget_type == "note":
-                yield Note.model_validate(update)
-            elif widget_type == "image":
-                yield Image.model_validate(update)
-            elif widget_type == "browser":
-                yield Browser.model_validate(update)
-            elif widget_type == "video":
-                yield Video.model_validate(update)
-            elif widget_type == "pdf":
-                yield PDF.model_validate(update)
-            else:
-                yield Widget.model_validate(update)
+        # Add subscribe=true to params
+        params = {"subscribe": "true"}
+
+        # Make streaming request
+        response = await self._request(
+            "GET", f"canvases/{canvas_id}/widgets", params=params, stream=True
+        )
+
+        try:
+            # Process the stream
+            async for line in response.content:
+                if not line:
+                    continue
+
+                try:
+                    # Parse JSON data
+                    data = json.loads(line)
+
+                    # Determine widget type and validate accordingly
+                    widget_type = data.get("type")
+                    if widget_type == "note":
+                        result: Union[Note, Image, Browser, Video, PDF, Widget] = (
+                            Note.model_validate(data)
+                        )
+                    elif widget_type == "image":
+                        result = Image.model_validate(data)
+                    elif widget_type == "browser":
+                        result = Browser.model_validate(data)
+                    elif widget_type == "video":
+                        result = Video.model_validate(data)
+                    elif widget_type == "pdf":
+                        result = PDF.model_validate(data)
+                    else:
+                        result = Widget.model_validate(data)
+
+                    # Call callback if provided
+                    if callback:
+                        callback(result)
+
+                    yield result
+
+                except json.JSONDecodeError as e:
+                    print(f"Failed to parse JSON from stream: {e}")
+                    continue
+                except Exception as e:
+                    print(f"Error processing stream data: {e}")
+                    continue
+
+        finally:
+            # Ensure response is closed
+            await response.release()
 
     async def subscribe_workspace(
         self,
@@ -2290,12 +2350,46 @@ class CanvusClient:
         Yields:
             Workspace: Stream of workspace updates
         """
-        async for update in self.subscribe(
+        # Add subscribe=true to params
+        params = {"subscribe": "true"}
+
+        # Make streaming request
+        response = await self._request(
+            "GET",
             f"clients/{client_id}/workspaces/{workspace_index}",
-            response_model=Workspace,
-            callback=callback,
-        ):
-            yield update
+            params=params,
+            stream=True,
+        )
+
+        try:
+            # Process the stream
+            async for line in response.content:
+                if not line:
+                    continue
+
+                try:
+                    # Parse JSON data
+                    data = json.loads(line)
+
+                    # Validate with Workspace model
+                    result = Workspace.model_validate(data)
+
+                    # Call callback if provided
+                    if callback:
+                        callback(result)
+
+                    yield result
+
+                except json.JSONDecodeError as e:
+                    print(f"Failed to parse JSON from stream: {e}")
+                    continue
+                except Exception as e:
+                    print(f"Error processing stream data: {e}")
+                    continue
+
+        finally:
+            # Ensure response is closed
+            await response.release()
 
     async def subscribe_note(
         self,
@@ -2313,9 +2407,40 @@ class CanvusClient:
         Yields:
             Note: Stream of note updates
         """
-        async for update in self.subscribe(
-            f"canvases/{canvas_id}/notes/{note_id}",
-            response_model=Note,
-            callback=callback,
-        ):
-            yield update
+        # Add subscribe=true to params
+        params = {"subscribe": "true"}
+
+        # Make streaming request
+        response = await self._request(
+            "GET", f"canvases/{canvas_id}/notes/{note_id}", params=params, stream=True
+        )
+
+        try:
+            # Process the stream
+            async for line in response.content:
+                if not line:
+                    continue
+
+                try:
+                    # Parse JSON data
+                    data = json.loads(line)
+
+                    # Validate with Note model
+                    result = Note.model_validate(data)
+
+                    # Call callback if provided
+                    if callback:
+                        callback(result)
+
+                    yield result
+
+                except json.JSONDecodeError as e:
+                    print(f"Failed to parse JSON from stream: {e}")
+                    continue
+                except Exception as e:
+                    print(f"Error processing stream data: {e}")
+                    continue
+
+        finally:
+            # Ensure response is closed
+            await response.release()

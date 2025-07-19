@@ -45,7 +45,7 @@ async def test_server_info(client: CanvusClient) -> None:
 
         config = await client.get_server_config()
         print_success(f"Server name: {config.server_name}")
-        if hasattr(config, "features"):
+        if hasattr(config, "features") and config.features is not None:
             print_success(f"Features configured: {len(config.features)}")
         if hasattr(config, "auth"):
             print_success("Authentication configuration present")
