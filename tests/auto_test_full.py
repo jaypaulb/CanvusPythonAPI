@@ -182,8 +182,9 @@ async def run_test_suite() -> list[TestResult]:
         print_success(f"{get_timestamp()} Configuration loaded")
 
         # Initialize client
+        verify_ssl = config.get("verify_ssl", True)
         async with CanvusClient(
-            base_url=config["base_url"], api_key=config["api_key"]
+            base_url=config["base_url"], api_key=config["api_key"], verify_ssl=verify_ssl
         ) as client:
             print_success(f"{get_timestamp()} Client initialized")
 
@@ -202,7 +203,7 @@ async def run_test_suite() -> list[TestResult]:
 
                 # Create new client with test token
                 async with CanvusClient(
-                    base_url=config["base_url"], api_key=plain_token
+                    base_url=config["base_url"], api_key=plain_token, verify_ssl=verify_ssl
                 ) as test_client:
 
                     # 4. Run token management tests

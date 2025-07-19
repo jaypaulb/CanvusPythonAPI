@@ -687,15 +687,21 @@ async def test_widget_annotations(client: CanvusClient) -> None:
             for i, annotation in enumerate(annotations[:5]):  # Show first 5
                 print_success(f"Annotation {i+1}: {annotation.get('id', 'No ID')}")
                 print_success(f"  Type: {annotation.get('type', 'Unknown')}")
-                print_success(f"  Widget ID: {annotation.get('widget_id', 'No Widget ID')}")
-                
+                print_success(
+                    f"  Widget ID: {annotation.get('widget_id', 'No Widget ID')}"
+                )
+
                 # Show annotation content if available
-                content = annotation.get('content', '')
+                content = annotation.get("content", "")
                 if content:
-                    content_preview = content[:100] + "..." if len(content) > 100 else content
+                    content_preview = (
+                        content[:100] + "..." if len(content) > 100 else content
+                    )
                     print_success(f"  Content: {content_preview}")
         else:
-            print_success("No widget annotations found (this is normal for empty canvases)")
+            print_success(
+                "No widget annotations found (this is normal for empty canvases)"
+            )
 
     except Exception as e:
         print_error(f"Widget annotations operations error: {e}")
@@ -718,25 +724,27 @@ async def test_subscribe_annotations(client: CanvusClient) -> None:
 
         # Test subscription setup (we'll only test the connection, not wait for updates)
         print_success("Setting up annotation subscription...")
-        
+
         # Create a simple callback function
         def annotation_callback(update):
             print_success(f"Received annotation update: {update.get('id', 'No ID')}")
-        
+
         # Test the subscription method (we'll only test the setup, not wait for updates)
         try:
             # Start the subscription generator
-            subscription = client.subscribe_annotations(canvas_id, callback=annotation_callback)
-            
+            _ = client.subscribe_annotations(canvas_id, callback=annotation_callback)
+
             # Test that we can get the generator (this tests the method structure)
             print_success("✅ Subscription generator created successfully")
-            
+
             # Note: In a real test, we would await the first item from the generator
             # but for this test, we're just verifying the method works correctly
             print_success("✅ Subscribe annotations method working correctly")
-            
+
         except Exception as sub_error:
-            print_warning(f"Subscription test completed (expected if server doesn't support streaming): {sub_error}")
+            print_warning(
+                f"Subscription test completed (expected if server doesn't support streaming): {sub_error}"
+            )
             print_success("✅ Method structure and error handling working correctly")
 
     except Exception as e:
