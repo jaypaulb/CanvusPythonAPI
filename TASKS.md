@@ -513,7 +513,7 @@ You will not be able to test this as we don't have an infinite test key to valid
 ## 12. Mipmaps & Assets - Missing Endpoints
 
 ### 12.1 Mipmaps Operations
-- [🔄] **Task 12.1.1**: Implement get mipmap info method - Status: In Progress (Issue #85)
+- [✅] **Task 12.1.1**: Implement get mipmap info method - Status: Completed (Issue #85)
   - **Endpoint**: `GET /mipmaps/{publicHashHex}`
   - **Method**: `get_mipmap_info(public_hash_hex: str, canvas_id: str) -> Dict[str, Any]`
   - **Implementation Steps**:
