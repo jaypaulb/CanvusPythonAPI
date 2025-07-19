@@ -36,8 +36,9 @@ The current test server environment:
 - ✅ Server is running and accessible
 - ✅ Authentication is working
 - ✅ Most API endpoints are functional
-- ❌ **No Canvus clients are connected**
-- ❌ **Client API access is not configured**
+- ✅ **1 Canvus client is connected** (CanvusServer)
+- ✅ **Client API access is enabled**
+- ⚠️ **API user has limited permissions** (cannot modify video outputs)
 
 ## Validation Strategy
 
@@ -59,18 +60,22 @@ When testing with non-existent client IDs, we expect:
 ### Example Validation Output
 
 ```
+🔧 Setting up Canvus client testing environment...
+✅ Found 1 connected client(s):
+   1. ID: 2ac9eaf4-1d16-44c1-b629-0a08b3f4f146
+      Name: CanvusServer
+      Version: 3.3.0 [a52c4fe11]
+      State: normal
+      Access: rw
+✅ Clients are connected
+✅ Client API access is enabled
+✅ Client testing environment is ready!
+
 🔍 Testing list_client_video_outputs integration...
-Found 0 clients
-⚠️  No clients available for testing
-ℹ️  This is expected in a test environment
-ℹ️  To test this method, you need:
-   1. A Canvus client connected to the server
-   2. Client API access enabled on the client
-   3. Client ID to use for testing
-Making GET request to clients/test-client-id-for-validation/video-outputs
-Response status: 404
-Error response: {"msg":"Client test-client-id-for-validation is offline"}
-✅ Method structure is correct - returns expected error for non-existent client
+Found 1 clients
+Testing with client: 2ac9eaf4-1d16-44c1-b629-0a08b3f4f146
+✅ Successfully retrieved 1 video outputs
+Sample output: {'index': 0, 'label': 'Video Output', 'source': '', 'suspended': False}
 ✅ PASS list_client_video_outputs
 ```
 
@@ -158,13 +163,17 @@ GET /clients/:client_id/video-inputs
    - Client ID exists but client is not connected
    - Solution: Ensure client is running and connected
 
-3. **"Permission denied"**
-   - Client API access is not enabled
-   - Solution: Enable API access in client settings
+3. **"Permission denied" or "API user doesn't have permission"**
+   - Client API access is not enabled OR API user lacks permissions
+   - Solution: Enable API access in client settings OR use admin credentials
 
 4. **"Unknown object type video-outputs"**
    - Server version doesn't support video outputs
    - Solution: Upgrade server or test with supported endpoints
+
+5. **"Widget is unknown or the API user doesn't have permission"**
+   - API user lacks permissions to modify video outputs
+   - Solution: Use admin credentials or configure proper permissions
 
 ### Debugging Steps
 
