@@ -5,9 +5,6 @@ This file validates that the methods actually work with the test server.
 """
 
 import asyncio
-import json
-from pathlib import Path
-from typing import Dict, Any
 
 from canvus_api import CanvusClient
 from tests.test_config import get_test_config
@@ -158,7 +155,7 @@ async def test_set_video_output_source_integration():
 
             # Call the method (test with index 0)
             result = await client.set_video_output_source(client_id, 0, payload)
-            print(f"✅ Successfully updated video output suspended state")
+            print("✅ Successfully updated video output suspended state")
             print(f"Result: {result}")
 
             # Verify the change
@@ -216,7 +213,7 @@ async def test_update_video_output_integration():
             try:
                 # Call the method
                 result = await client.update_video_output(canvas_id, output_id, payload)
-                print(f"✅ Successfully updated video output")
+                print("✅ Successfully updated video output")
                 print(f"Result: {result}")
                 return True
             except Exception as update_error:
@@ -251,7 +248,7 @@ async def test_get_license_info_integration():
         try:
             # Call the method
             license_info = await client.get_license_info()
-            print(f"✅ Successfully retrieved license info")
+            print("✅ Successfully retrieved license info")
             print(f"License info: {license_info}")
 
             # Validate response structure

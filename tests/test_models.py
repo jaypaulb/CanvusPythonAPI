@@ -2,7 +2,6 @@
 Test Pydantic models for validation.
 """
 
-import pytest
 from datetime import datetime
 from canvus_api.models import (
     Group,
@@ -274,4 +273,4 @@ class TestAnnotation:
         assert annotation.author_id == "user-123"
         assert annotation.author_name == "Test User"
         assert annotation.position == {"x": 100.0, "y": 200.0}
-        assert annotation.color == "#ff0000" 
+        assert annotation.color == "#ff0000"

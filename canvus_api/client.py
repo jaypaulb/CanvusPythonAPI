@@ -148,7 +148,7 @@ class CanvusClient:
                 if status not in range(200, 300):
                     text = await response.text()
                     print(f"Error response: {text}")
-                    print(f"Full error response details:")
+                    print("Full error response details:")
                     print(f"  Status: {status}")
                     print(f"  Headers: {dict(response.headers)}")
                     print(f"  Body: {text}")

@@ -5,10 +5,7 @@ Pytest configuration and fixtures for Canvus API tests.
 import pytest
 import pytest_asyncio
 import asyncio
-import json
-import os
 from pathlib import Path
-from typing import Dict, Any
 from canvus_api import CanvusClient
 from canvus_api.exceptions import CanvusAPIError
 from .test_utils import load_config
@@ -26,11 +23,11 @@ def event_loop():
 async def client():
     """Create a shared client instance for all tests."""
     config = load_config()
-    
+
     async with CanvusClient(
-        base_url=config["server"]["base_url"], 
+        base_url=config["server"]["base_url"],
         api_key=config["authentication"]["api_key"],
-        verify_ssl=config["server"].get("verify_ssl", False)
+        verify_ssl=config["server"].get("verify_ssl", False),
     ) as client:
         yield client
 
@@ -58,12 +55,12 @@ async def test_canvas(client):
     """Create a test canvas for testing."""
     canvas_payload = {
         "name": f"Test Canvas - {asyncio.get_event_loop().time()}",
-        "description": "Canvas created for testing"
+        "description": "Canvas created for testing",
     }
-    
+
     canvas = await client.create_canvas(canvas_payload)
     yield canvas
-    
+
     # Cleanup
     try:
         await client.delete_canvas(canvas.id)
@@ -76,12 +73,12 @@ async def test_folder(client):
     """Create a test folder for testing."""
     folder_payload = {
         "name": f"Test Folder - {asyncio.get_event_loop().time()}",
-        "description": "Folder created for testing"
+        "description": "Folder created for testing",
     }
-    
+
     folder = await client.create_folder(folder_payload)
     yield folder
-    
+
     # Cleanup
     try:
         await client.delete_folder(folder.id)
@@ -95,13 +92,13 @@ async def test_user(client):
     user_payload = {
         "email": f"testuser_{asyncio.get_event_loop().time()}@test.local",
         "name": "Test User",
-        "password": "TestPassword123!"
+        "password": "TestPassword123!",
     }
-    
+
     try:
         user = await client.create_user(user_payload)
         yield user
-        
+
         # Cleanup
         try:
             if user.id is not None:
@@ -112,6 +109,7 @@ async def test_user(client):
         # If user creation fails due to permissions, create a mock user
         if e.status_code in [401, 403]:
             from canvus_api.models import User
+
             mock_user = User(
                 id=99999,
                 email=user_payload["email"],
@@ -119,7 +117,7 @@ async def test_user(client):
                 admin=False,
                 approved=True,
                 blocked=False,
-                state="normal"
+                state="normal",
             )
             yield mock_user
         else:
@@ -131,12 +129,12 @@ async def test_group(client):
     """Create a test group for testing."""
     group_payload = {
         "name": f"Test Group - {asyncio.get_event_loop().time()}",
-        "description": "Group created for testing"
+        "description": "Group created for testing",
     }
-    
+
     group = await client.create_group(group_payload)
     yield group
-    
+
     # Cleanup
     try:
         await client.delete_group(group["id"])
@@ -149,7 +147,7 @@ async def test_token(client, user_id):
     """Create a test token for testing."""
     token = await client.create_token(user_id, "Test token")
     yield token
-    
+
     # Cleanup
     try:
         await client.delete_token(user_id, token.id)
@@ -190,4 +188,4 @@ def sample_video_path(test_files_dir):
         video_path.parent.mkdir(exist_ok=True)
         with open(video_path, "wb") as f:
             f.write(b"dummy video data")
-    return str(video_path) 
+    return str(video_path)

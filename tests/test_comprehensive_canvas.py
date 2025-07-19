@@ -4,9 +4,8 @@ Comprehensive test suite for canvas management endpoints.
 
 import pytest
 import asyncio
-from typing import Dict, Any
 from canvus_api import CanvusClient, CanvusAPIError
-from canvus_api.models import Canvas, CanvasFolder
+from canvus_api.models import Canvas
 
 
 class TestCanvasManagement:
@@ -16,7 +15,7 @@ class TestCanvasManagement:
     async def test_list_canvases(self, client: CanvusClient):
         """Test listing canvases."""
         canvases = await client.list_canvases()
-        
+
         assert isinstance(canvases, list)
         for canvas in canvases:
             assert isinstance(canvas, Canvas)
@@ -29,18 +28,18 @@ class TestCanvasManagement:
         canvas_payload = {
             "name": f"Test Canvas {asyncio.get_event_loop().time()}",
             "description": "Canvas created for testing",
-            "folder_id": test_folder.id
+            "folder_id": test_folder.id,
         }
-        
+
         # Create canvas
         canvas = await client.create_canvas(canvas_payload)
         assert isinstance(canvas, Canvas)
         assert canvas.name == canvas_payload["name"]
         assert canvas.folder_id == test_folder.id
-        
+
         # Delete canvas
         await client.delete_canvas(canvas.id)
-        
+
         # Verify deletion
         with pytest.raises(CanvusAPIError) as exc_info:
             await client.get_canvas(canvas.id)
@@ -50,7 +49,7 @@ class TestCanvasManagement:
     async def test_get_canvas(self, client: CanvusClient, test_canvas):
         """Test getting a specific canvas."""
         canvas = await client.get_canvas(test_canvas.id)
-        
+
         assert isinstance(canvas, Canvas)
         assert canvas.id == test_canvas.id
         assert canvas.name == test_canvas.name
@@ -60,12 +59,11 @@ class TestCanvasManagement:
         """Test updating a canvas."""
         new_name = f"Updated Canvas {asyncio.get_event_loop().time()}"
         new_description = "Updated description"
-        
+
         updated_canvas = await client.update_canvas(
-            test_canvas.id, 
-            {"name": new_name, "description": new_description}
+            test_canvas.id, {"name": new_name, "description": new_description}
         )
-        
+
         assert isinstance(updated_canvas, Canvas)
         assert updated_canvas.name == new_name
 
@@ -75,21 +73,21 @@ class TestCanvasManagement:
         # Create another folder for moving
         new_folder_payload = {
             "name": f"Move Test Folder {asyncio.get_event_loop().time()}",
-            "description": "Folder for move testing"
+            "description": "Folder for move testing",
         }
         new_folder = await client.create_folder(new_folder_payload)
-        
+
         try:
             # Move canvas
             moved_canvas = await client.move_canvas(test_canvas.id, new_folder.id)
-            
+
             assert isinstance(moved_canvas, Canvas)
             assert moved_canvas.folder_id == new_folder.id
-            
+
             # Verify the move
             retrieved_canvas = await client.get_canvas(test_canvas.id)
             assert retrieved_canvas.folder_id == new_folder.id
-            
+
         finally:
             # Cleanup
             await client.delete_folder(new_folder.id)
@@ -99,16 +97,14 @@ class TestCanvasManagement:
         """Test copying a canvas."""
         # The API only allows changing one property at a time
         # First copy with just the folder_id
-        copy_payload = {
-            "folder_id": test_folder.id
-        }
-        
+        copy_payload = {"folder_id": test_folder.id}
+
         copied_canvas = await client.copy_canvas(test_canvas.id, copy_payload)
-        
+
         assert isinstance(copied_canvas, Canvas)
         assert copied_canvas.folder_id == test_folder.id
         assert copied_canvas.id != test_canvas.id
-        
+
         # Cleanup
         await client.delete_canvas(copied_canvas.id)
 
@@ -128,7 +124,7 @@ class TestCanvasManagement:
     async def test_get_canvas_permissions(self, client: CanvusClient, test_canvas):
         """Test getting canvas permissions."""
         permissions = await client.get_canvas_permissions(test_canvas.id)
-        
+
         assert isinstance(permissions, dict)
         assert "editors_can_share" in permissions
         assert "users" in permissions
@@ -137,14 +133,12 @@ class TestCanvasManagement:
     @pytest.mark.asyncio
     async def test_set_canvas_permissions(self, client: CanvusClient, test_canvas):
         """Test setting canvas permissions."""
-        permissions_payload = {
-            "editors_can_share": True,
-            "users": [],
-            "groups": []
-        }
-        
-        result = await client.set_canvas_permissions(test_canvas.id, permissions_payload)
-        
+        permissions_payload = {"editors_can_share": True, "users": [], "groups": []}
+
+        result = await client.set_canvas_permissions(
+            test_canvas.id, permissions_payload
+        )
+
         assert isinstance(result, dict)
         assert "editors_can_share" in result
         assert "users" in result
@@ -157,7 +151,7 @@ class TestCanvasManagement:
         demo_canvas = await client.set_canvas_mode(test_canvas.id, True)
         assert isinstance(demo_canvas, Canvas)
         assert demo_canvas.mode == "demo"
-        
+
         # Test normal mode
         normal_canvas = await client.set_canvas_mode(test_canvas.id, False)
         assert isinstance(normal_canvas, Canvas)
@@ -168,10 +162,10 @@ class TestCanvasManagement:
         """Test saving and restoring demo state."""
         # Set to demo mode first
         await client.set_canvas_mode(test_canvas.id, True)
-        
+
         # Save demo state
         await client.save_demo_state(test_canvas.id)
-        
+
         # Restore demo state
         await client.restore_demo_state(test_canvas.id)
 
@@ -182,7 +176,7 @@ class TestCanvasManagement:
         with pytest.raises(CanvusAPIError) as exc_info:
             await client.get_canvas("non-existent-id")
         assert exc_info.value.status_code == 404
-        
+
         # Test updating non-existent canvas
         with pytest.raises(CanvusAPIError) as exc_info:
             await client.update_canvas("non-existent-id", {"name": "test"})
@@ -194,7 +188,7 @@ class TestCanvasManagement:
         # Test with search parameter
         canvases = await client.list_canvases({"search": "test"})
         assert isinstance(canvases, list)
-        
+
         # Test with folder_id parameter
         canvases = await client.list_canvases({"folder_id": "1000"})
         assert isinstance(canvases, list)
@@ -204,7 +198,6 @@ class TestCanvasManagement:
         """Test canvas creation validation."""
         # Test with invalid folder ID
         with pytest.raises(CanvusAPIError):
-            await client.create_canvas({
-                "name": "Test Canvas",
-                "folder_id": "invalid-folder-id"
-            }) 
+            await client.create_canvas(
+                {"name": "Test Canvas", "folder_id": "invalid-folder-id"}
+            )
