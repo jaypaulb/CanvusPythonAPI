@@ -476,6 +476,51 @@ async def test_client_video_outputs(client: CanvusClient) -> None:
         print_error(f"Client video outputs operations error: {e}")
 
 
+async def test_video_output_source_setting(client: CanvusClient) -> None:
+    """Test video output source setting operations."""
+    print_header("Testing Video Output Source Setting Operations")
+
+    try:
+        # First, get a list of clients to find one to test with
+        clients = await client.list_clients()
+        if not clients:
+            print_warning("No clients available for video output source test")
+            return
+
+        # Use the first client for testing
+        client_id = clients[0]["id"]
+        print_success(f"Testing video output source setting for client: {client_id}")
+
+        # List client video outputs first
+        video_outputs = await client.list_client_video_outputs(client_id)
+        print_success(f"Found {len(video_outputs)} client video outputs")
+
+        if video_outputs:
+            # Test setting source for the first output (index 0)
+            output_index = 0
+            source_payload = {
+                "source": "test_source_1",
+                "enabled": True,
+                "resolution": "1920x1080",
+                "refresh_rate": 60
+            }
+
+            updated_output = await client.set_video_output_source(client_id, output_index, source_payload)
+            print_success(f"Updated video output {output_index}: {updated_output.get('source', 'Unknown')}")
+
+            # Verify the update
+            if updated_output.get("source") == "test_source_1":
+                print_success("Video output source update verified")
+            else:
+                print_warning(f"Source not updated as expected. Got: {updated_output.get('source')}")
+
+        else:
+            print_warning("No video outputs available for source setting test")
+
+    except Exception as e:
+        print_error(f"Video output source setting operations error: {e}")
+
+
 async def test_server_functions(client: CanvusClient) -> None:
     """Main test function."""
     print_header("Starting Canvus Server Function Tests")
@@ -503,6 +548,7 @@ async def test_server_functions(client: CanvusClient) -> None:
             await test_video_input_operations(test_client)
             await test_client_video_inputs(test_client)
             await test_client_video_outputs(test_client)
+            await test_video_output_source_setting(test_client)
             await test_folder_operations(test_client)
             await test_permission_management(test_client)
             await test_token_operations(test_client, user_id)
