@@ -1771,6 +1771,31 @@ class CanvusClient:
             json_data=payload,
         )
 
+    async def update_video_output(self, canvas_id: str, output_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+        """Update a video output on a canvas.
+
+        Args:
+            canvas_id (str): The ID of the canvas
+            output_id (str): The ID of the video output to update
+            payload (Dict[str, Any]): Video output update configuration including:
+                - name (str, optional): New name for the video output
+                - enabled (bool, optional): Whether the output is enabled
+                - resolution (str, optional): Output resolution
+                - refresh_rate (int, optional): Refresh rate in Hz
+                - source (str, optional): Video source identifier
+
+        Returns:
+            Dict[str, Any]: Updated video output data as dictionary
+
+        Raises:
+            CanvusAPIError: If the request fails, canvas not found, or invalid configuration
+        """
+        return await self._request(
+            "PATCH",
+            f"canvases/{canvas_id}/video-outputs/{output_id}",
+            json_data=payload,
+        )
+
     async def get_client_workspaces(self, client_id: str) -> List[Workspace]:
         """Get workspaces for a specific client."""
         return await self._request(
