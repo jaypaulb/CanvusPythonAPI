@@ -661,6 +661,46 @@ async def test_request_offline_activation(client: CanvusClient) -> None:
         print_error(f"Request offline activation operations error: {e}")
 
 
+async def test_widget_annotations(client: CanvusClient) -> None:
+    """Test widget annotations operations."""
+    print_header("Testing Widget Annotations Operations")
+
+    try:
+        # First, get a list of canvases to find one to test with
+        canvases = await client.list_canvases()
+        if not canvases:
+            print_warning("No canvases available for widget annotations test")
+            return
+
+        # Use the first canvas for testing
+        canvas_id = canvases[0].id
+        print_success(f"Testing widget annotations for canvas: {canvas_id}")
+
+        # Test listing widget annotations
+        annotations = await client.list_widget_annotations(canvas_id)
+        if annotations is None:
+            annotations = []
+        print_success(f"Retrieved {len(annotations)} widget annotations")
+
+        # Display annotation details if available
+        if annotations:
+            for i, annotation in enumerate(annotations[:5]):  # Show first 5
+                print_success(f"Annotation {i+1}: {annotation.get('id', 'No ID')}")
+                print_success(f"  Type: {annotation.get('type', 'Unknown')}")
+                print_success(f"  Widget ID: {annotation.get('widget_id', 'No Widget ID')}")
+                
+                # Show annotation content if available
+                content = annotation.get('content', '')
+                if content:
+                    content_preview = content[:100] + "..." if len(content) > 100 else content
+                    print_success(f"  Content: {content_preview}")
+        else:
+            print_success("No widget annotations found (this is normal for empty canvases)")
+
+    except Exception as e:
+        print_error(f"Widget annotations operations error: {e}")
+
+
 async def test_server_functions(client: CanvusClient) -> None:
     """Main test function."""
     print_header("Starting Canvus Server Function Tests")
@@ -692,6 +732,7 @@ async def test_server_functions(client: CanvusClient) -> None:
             await test_update_video_output(test_client)
             await test_license_info(test_client)
             await test_request_offline_activation(test_client)
+            await test_widget_annotations(test_client)
             await test_folder_operations(test_client)
             await test_permission_management(test_client)
             await test_token_operations(test_client, user_id)
