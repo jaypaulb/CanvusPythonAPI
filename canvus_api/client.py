@@ -1954,6 +1954,50 @@ class CanvusClient:
         """
         return await self._request("GET", "audit-log/export-csv", params=filters, return_binary=True)
 
+    async def get_mipmap_info(self, public_hash_hex: str, canvas_id: str, page: Optional[int] = None) -> Dict[str, Any]:
+        """Get mipmap information for a given asset hash.
+
+        Retrieves mipmap information including resolution, max level, and page count
+        for a given asset hash. This is useful for determining available mipmap levels
+        and asset dimensions for WebGL rendering.
+
+        Args:
+            public_hash_hex (str): The public hash hex of the asset
+            canvas_id (str): Canvas ID for access control (passed as header)
+            page (Optional[int]): Page number for multi-page assets (first page is 0)
+
+        Returns:
+            Dict[str, Any]: Mipmap information data as dictionary including:
+                - resolution (Dict[str, int]): Original asset dimensions (width, height)
+                - max_level (int): Maximum available mipmap level
+                - pages (int): Number of pages in the asset
+
+        Raises:
+            CanvusAPIError: If the request fails or mipmap info cannot be retrieved
+            AuthenticationError: If authentication fails
+            NotFoundError: If asset not found or user has no access
+
+        Example:
+            >>> # Get mipmap info for a single-page asset
+            >>> mipmap_info = await client.get_mipmap_info(
+            ...     "abcdef123456", 
+            ...     "canvas-123"
+            ... )
+            >>> print(f"Resolution: {mipmap_info['resolution']}")
+            >>> print(f"Max level: {mipmap_info['max_level']}")
+            
+            >>> # Get mipmap info for a specific page of a multi-page asset
+            >>> page_info = await client.get_mipmap_info(
+            ...     "abcdef123456", 
+            ...     "canvas-123",
+            ...     page=1
+            ... )
+            >>> print(f"Page resolution: {page_info['resolution']}")
+        """
+        headers = {"canvas-id": canvas_id}
+        params = {"page": page} if page is not None else None
+        return await self._request("GET", f"mipmaps/{public_hash_hex}", headers=headers, params=params)
+
     async def get_client_workspaces(self, client_id: str) -> List[Workspace]:
         """Get workspaces for a specific client."""
         return await self._request(
