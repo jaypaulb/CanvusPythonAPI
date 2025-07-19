@@ -99,6 +99,7 @@ class CanvusClient:
         """Make a request to the API."""
         url = self._build_url(endpoint)
         print(f"Making {method} request to {endpoint}")
+        print(f"Full URL: {url}")
 
         # Prepare headers
         request_headers = {
@@ -113,14 +114,18 @@ class CanvusClient:
         request_kwargs: Dict[str, Any] = {}
         if params:
             request_kwargs["params"] = params
+            print(f"Request params: {params}")
         if json_data:
             request_kwargs["json"] = json_data
+            print(f"Request JSON data: {json_data}")
         if data:
             request_kwargs["data"] = data
+            print(f"Request form data: {type(data)}")
         request_kwargs["headers"] = {
             **request_headers,
             "Private-Token": self.api_key,  # Real token for request
         }
+        print(f"Request headers: {dict(request_kwargs['headers'])}")
 
         # Create SSL context based on verify_ssl setting
         import ssl
@@ -136,14 +141,23 @@ class CanvusClient:
             async with session.request(method, url, **request_kwargs) as response:
                 status = response.status
                 print(f"Response status: {status}")
+                
+                # Log response headers for debugging
+                print(f"Response headers: {dict(response.headers)}")
 
                 if status not in range(200, 300):
                     text = await response.text()
                     print(f"Error response: {text}")
+                    print(f"Full error response details:")
+                    print(f"  Status: {status}")
+                    print(f"  Headers: {dict(response.headers)}")
+                    print(f"  Body: {text}")
                     raise CanvusAPIError(text, status_code=status)
 
                 if return_binary:
-                    return await response.read()
+                    binary_data = await response.read()
+                    print(f"Binary response: {len(binary_data)} bytes")
+                    return binary_data
 
                 if stream:
                     return response  # Return the response object for streaming
@@ -2035,6 +2049,15 @@ class CanvusClient:
             ...     "canvas-123"
             ... )
             >>> print(f"Small image size: {len(small_image)} bytes")
+            
+            >>> # Get a specific page of a multi-page asset
+            >>> page_image = await client.get_mipmap_level_image(
+            ...     "abcdef123456", 
+            ...     0, 
+            ...     "canvas-123",
+            ...     page=1
+            ... )
+            >>> print(f"Page 1 image size: {len(page_image)} bytes")
         """
         headers = {"canvas-id": canvas_id}
         params = {"page": page} if page is not None else None
