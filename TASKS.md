@@ -672,7 +672,7 @@ You will not be able to test this as we don't have an infinite test key to valid
 ## 18. Bug Fixes & Enhancements
 
 ### 18.1 Parent ID Widget Position Bug Fix
-- [🔄] **Task 18.1.1**: Investigate and fix widget position bug when parent_id changes - Status: In Progress (Issue #99)
+- [🔄] **Task 18.1.1**: Investigate and fix widget position bug when parent_id changes - Status: In Progress (Issue #101)
   - **Problem**: When a widget's parent_id is updated, the widget "moves" because loc and scale are relative to the parent
   - **Investigation Phase**:
     1. Create test canvas with notes at specific known locations
