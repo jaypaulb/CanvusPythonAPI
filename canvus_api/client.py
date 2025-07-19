@@ -1009,6 +1009,24 @@ class CanvusClient:
         """
         await self._request("DELETE", f"canvases/{canvas_id}/widgets/{widget_id}")
 
+    async def list_widget_annotations(self, canvas_id: str) -> List[Dict[str, Any]]:
+        """List widget annotations for a canvas.
+
+        Args:
+            canvas_id (str): The ID of the canvas
+
+        Returns:
+            List[Dict[str, Any]]: List of widget annotations as dictionaries
+
+        Raises:
+            CanvusAPIError: If the request fails
+        """
+        return await self._request(
+            "GET", 
+            f"canvases/{canvas_id}/widgets", 
+            params={"annotations": "1"}
+        )
+
     # Canvas Background Operations
     async def get_canvas_background(self, canvas_id: str) -> Dict[str, Any]:
         """Get the background configuration for a canvas.
