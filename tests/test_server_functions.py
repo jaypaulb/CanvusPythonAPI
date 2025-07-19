@@ -449,6 +449,33 @@ async def test_client_video_inputs(client: CanvusClient) -> None:
         print_error(f"Client video inputs operations error: {e}")
 
 
+async def test_client_video_outputs(client: CanvusClient) -> None:
+    """Test client video outputs operations."""
+    print_header("Testing Client Video Outputs Operations")
+
+    try:
+        # First, get a list of clients to find one to test with
+        clients = await client.list_clients()
+        if not clients:
+            print_warning("No clients available for video outputs test")
+            return
+
+        # Use the first client for testing
+        client_id = clients[0]["id"]
+        print_success(f"Testing video outputs for client: {client_id}")
+
+        # List client video outputs
+        video_outputs = await client.list_client_video_outputs(client_id)
+        print_success(f"Found {len(video_outputs)} client video outputs")
+
+        # Display some details about the video outputs
+        for i, vo in enumerate(video_outputs[:3]):  # Show first 3
+            print_success(f"Video output {i+1}: {vo.get('name', 'Unnamed')} (ID: {vo.get('id', 'Unknown')})")
+
+    except Exception as e:
+        print_error(f"Client video outputs operations error: {e}")
+
+
 async def test_server_functions(client: CanvusClient) -> None:
     """Main test function."""
     print_header("Starting Canvus Server Function Tests")
@@ -475,6 +502,7 @@ async def test_server_functions(client: CanvusClient) -> None:
             await test_canvas_background_operations(test_client)
             await test_video_input_operations(test_client)
             await test_client_video_inputs(test_client)
+            await test_client_video_outputs(test_client)
             await test_folder_operations(test_client)
             await test_permission_management(test_client)
             await test_token_operations(test_client, user_id)

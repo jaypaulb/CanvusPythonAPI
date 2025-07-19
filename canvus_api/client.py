@@ -1733,6 +1733,20 @@ class CanvusClient:
         """
         return await self._request("GET", f"clients/{client_id}/video-inputs")
 
+    async def list_client_video_outputs(self, client_id: str) -> List[Dict[str, Any]]:
+        """List all video outputs for a specific client.
+
+        Args:
+            client_id (str): The ID of the client to list video outputs for
+
+        Returns:
+            List[Dict[str, Any]]: List of client video outputs as dictionaries
+
+        Raises:
+            CanvusAPIError: If the request fails or client is not found
+        """
+        return await self._request("GET", f"clients/{client_id}/video-outputs")
+
     async def get_client_workspaces(self, client_id: str) -> List[Workspace]:
         """Get workspaces for a specific client."""
         return await self._request(
