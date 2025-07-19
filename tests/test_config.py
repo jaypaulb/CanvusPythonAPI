@@ -72,6 +72,13 @@ class TestConfig:
         """Get the ID from test data."""
         data = self._test_data.get(key) or self.config["test_data"].get(key, {})
         return data.get(id_field)
+    
+    def get_canvas_id(self) -> str:
+        """Get the canvas ID from configuration."""
+        canvas_id = self.config["test_data"]["test_canvas"]["id"]
+        if not canvas_id:
+            raise ValueError("Canvas ID not configured in test_config.json")
+        return canvas_id
 
 
 class TestDataManager:

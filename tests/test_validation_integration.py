@@ -110,10 +110,7 @@ async def test_set_video_output_source_integration():
                 # Test with a mock client ID to verify method structure
                 mock_client_id = "test-client-id-for-validation"
                 payload = {
-                    "source": "test_source_validation",
-                    "enabled": True,
-                    "resolution": "1920x1080",
-                    "refresh_rate": 60
+                    "suspended": True
                 }
                 
                 try:
@@ -135,18 +132,39 @@ async def test_set_video_output_source_integration():
             client_id = clients[0]["id"]
             print(f"Testing with client: {client_id}")
             
-            # Test payload
+            # First, get current video output state
+            video_outputs = await client.list_client_video_outputs(client_id)
+            if not video_outputs:
+                print("⚠️  No video outputs available for testing")
+                return False
+            
+            current_output = video_outputs[0]
+            current_suspended = current_output.get('suspended', False)
+            print(f"Current suspended state: {current_suspended}")
+            
+            # Test payload - toggle the suspended state
+            new_suspended = not current_suspended
             payload = {
-                "source": "test_source_validation",
-                "enabled": True,
-                "resolution": "1920x1080",
-                "refresh_rate": 60
+                "suspended": new_suspended
             }
+            
+            print(f"Testing PATCH with suspended: {new_suspended}")
             
             # Call the method (test with index 0)
             result = await client.set_video_output_source(client_id, 0, payload)
-            print(f"✅ Successfully set video output source")
+            print(f"✅ Successfully updated video output suspended state")
             print(f"Result: {result}")
+            
+            # Verify the change
+            updated_outputs = await client.list_client_video_outputs(client_id)
+            updated_output = updated_outputs[0]
+            updated_suspended = updated_output.get('suspended', False)
+            print(f"Updated suspended state: {updated_suspended}")
+            
+            if updated_suspended == new_suspended:
+                print("✅ Suspended state change verified successfully")
+            else:
+                print("⚠️  Suspended state change not reflected in GET response")
             
             return True
             

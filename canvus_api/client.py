@@ -151,10 +151,13 @@ class CanvusClient:
                 text = await response.text()
                 if not text:
                     data = None
+                    print(f"Empty response body")
                 else:
                     try:
                         data = json.loads(text)
+                        print(f"Full response data: {json.dumps(data, indent=2)}")
                     except Exception as e:
+                        print(f"Raw response text: {text}")
                         raise CanvusAPIError(
                             f"Failed to decode JSON response: {str(e)}", status_code=500
                         )
