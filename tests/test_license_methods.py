@@ -205,6 +205,116 @@ class TestLicenseMethods:
                 json_data={"license": ""}
             )
 
+    @pytest.mark.asyncio
+    async def test_get_audit_log_success(self, mock_client):
+        """Test successful audit log retrieval."""
+        # Mock response data
+        mock_response = {
+            "events": [
+                {
+                    "id": "1",
+                    "author_id": "123",
+                    "target_type": "user",
+                    "target_id": "456",
+                    "action": "created",
+                    "created_at": "2024-01-01T12:00:00Z",
+                    "details": {"email": "test@example.com"}
+                },
+                {
+                    "id": "2",
+                    "author_id": "123",
+                    "target_type": "canvas",
+                    "target_id": "789",
+                    "action": "updated",
+                    "created_at": "2024-01-01T13:00:00Z",
+                    "details": {"name": "Test Canvas"}
+                }
+            ],
+            "pagination": {
+                "per_page": 20,
+                "current_page": 1,
+                "total_pages": 1,
+                "total_count": 2
+            }
+        }
+
+        # Mock the _request method
+        with patch.object(mock_client, '_request', new_callable=AsyncMock) as mock_request:
+            mock_request.return_value = mock_response
+
+            # Test the method without filters
+            result = await mock_client.get_audit_log()
+
+            # Verify the result
+            assert result == mock_response
+            assert len(result["events"]) == 2
+            assert result["events"][0]["action"] == "created"
+            assert result["pagination"]["total_count"] == 2
+
+            # Verify the _request method was called correctly
+            mock_request.assert_called_once_with("GET", "audit-log", params=None)
+
+    @pytest.mark.asyncio
+    async def test_get_audit_log_with_filters(self, mock_client):
+        """Test audit log retrieval with filters."""
+        # Mock response data
+        mock_response = {
+            "events": [
+                {
+                    "id": "1",
+                    "author_id": "123",
+                    "target_type": "user",
+                    "target_id": "456",
+                    "action": "created",
+                    "created_at": "2024-01-01T12:00:00Z"
+                }
+            ],
+            "pagination": {
+                "per_page": 10,
+                "current_page": 1,
+                "total_pages": 1,
+                "total_count": 1
+            }
+        }
+
+        # Mock the _request method
+        with patch.object(mock_client, '_request', new_callable=AsyncMock) as mock_request:
+            mock_request.return_value = mock_response
+
+            # Test the method with filters
+            filters = {
+                "author_id": "123",
+                "created_after": "2024-01-01T00:00:00Z",
+                "per_page": 10
+            }
+            result = await mock_client.get_audit_log(filters)
+
+            # Verify the result
+            assert result == mock_response
+            assert len(result["events"]) == 1
+            assert result["events"][0]["author_id"] == "123"
+
+            # Verify the _request method was called correctly
+            mock_request.assert_called_once_with("GET", "audit-log", params=filters)
+
+    @pytest.mark.asyncio
+    async def test_get_audit_log_error(self, mock_client):
+        """Test audit log retrieval with error."""
+        # Mock the _request method to raise an exception
+        with patch.object(mock_client, '_request', new_callable=AsyncMock) as mock_request:
+            mock_request.side_effect = CanvusAPIError("Access denied", status_code=403)
+
+            # Test the method should raise the exception
+            with pytest.raises(CanvusAPIError) as exc_info:
+                await mock_client.get_audit_log()
+
+            # Verify the exception
+            assert str(exc_info.value) == "Access denied"
+            assert exc_info.value.status_code == 403
+
+            # Verify the _request method was called correctly
+            mock_request.assert_called_once_with("GET", "audit-log", params=None)
+
 
 if __name__ == "__main__":
     pytest.main([__file__, "-v"]) 
