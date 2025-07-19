@@ -4,7 +4,7 @@ Test configuration and utilities for Canvus API integration tests.
 
 import json
 from pathlib import Path
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 from canvus_api import CanvusClient
 
 
@@ -14,7 +14,7 @@ class TestConfig:
     def __init__(self, config_file: str = "tests/test_config.json"):
         self.config_file = config_file
         self.config = self._load_config()
-        self._test_data = {}
+        self._test_data: Dict[str, Any] = {}
 
     def _load_config(self) -> Dict[str, Any]:
         """Load configuration from JSON file."""
@@ -87,7 +87,7 @@ class TestDataManager:
     def __init__(self, client: CanvusClient, config: TestConfig):
         self.client = client
         self.config = config
-        self.created_resources = []
+        self.created_resources: List[Dict[str, Any]] = []
 
     async def setup_test_environment(self) -> None:
         """Set up the test environment with required data."""

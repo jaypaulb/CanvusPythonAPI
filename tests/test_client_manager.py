@@ -8,14 +8,7 @@ this module focuses on detecting existing clients and providing guidance for set
 """
 
 import asyncio
-import json
-import os
-import platform
-import subprocess
-import time
-from pathlib import Path
 from typing import Dict, Any, Optional, List
-import aiohttp
 
 try:
     import psutil

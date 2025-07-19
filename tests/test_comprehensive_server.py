@@ -4,7 +4,6 @@ Comprehensive test suite for server management endpoints.
 
 import pytest
 import asyncio
-from typing import Dict, Any
 from canvus_api import CanvusClient, CanvusAPIError
 from canvus_api.models import ServerInfo, ServerConfig
 
@@ -16,7 +15,7 @@ class TestServerManagement:
     async def test_get_server_info(self, client: CanvusClient):
         """Test getting server information."""
         info = await client.get_server_info()
-        
+
         assert isinstance(info, ServerInfo)
         assert info.version is not None
         assert info.api is not None
@@ -27,7 +26,7 @@ class TestServerManagement:
     async def test_get_server_config(self, client: CanvusClient):
         """Test getting server configuration."""
         config = await client.get_server_config()
-        
+
         assert isinstance(config, ServerConfig)
         assert config.server_name is not None
 
@@ -37,14 +36,14 @@ class TestServerManagement:
         # Get current config
         original_config = await client.get_server_config()
         original_name = original_config.server_name
-        
+
         # Update server name
         new_name = f"Test Server {asyncio.get_event_loop().time()}"
         updated_config = await client.update_server_config({"server_name": new_name})
-        
+
         assert isinstance(updated_config, ServerConfig)
         assert updated_config.server_name == new_name
-        
+
         # Restore original name
         await client.update_server_config({"server_name": original_name})
 
@@ -70,12 +69,12 @@ class TestServerManagement:
     async def test_server_info_response_structure(self, client: CanvusClient):
         """Test server info response structure."""
         info = await client.get_server_info()
-        
+
         # Check required fields
-        assert hasattr(info, 'version')
-        assert hasattr(info, 'api')
-        assert hasattr(info, 'server_id')
-        
+        assert hasattr(info, "version")
+        assert hasattr(info, "api")
+        assert hasattr(info, "server_id")
+
         # Check data types
         assert isinstance(info.version, str)
         assert isinstance(info.api, list)
@@ -85,9 +84,9 @@ class TestServerManagement:
     async def test_server_config_response_structure(self, client: CanvusClient):
         """Test server config response structure."""
         config = await client.get_server_config()
-        
+
         # Check required fields
-        assert hasattr(config, 'server_name')
-        
+        assert hasattr(config, "server_name")
+
         # Check data types
-        assert isinstance(config.server_name, str) 
+        assert isinstance(config.server_name, str)

@@ -102,7 +102,7 @@ async def test_video_output_windows():
             print("-" * 30)
             if workspaces:
                 # Try setting source to first workspace
-                workspace_source = f"workspace-0"
+                workspace_source = "workspace-0"
                 source_payload = {"source": workspace_source}
                 print(f"Setting source to: '{workspace_source}'")
 

@@ -132,7 +132,7 @@ async def test_video_inputs_comprehensive():
                     }
 
                     try:
-                        print(f"  📤 Sending POST request...")
+                        print("  📤 Sending POST request...")
                         new_widget = await client.create_video_input(
                             canvas_id, create_payload
                         )
@@ -144,7 +144,7 @@ async def test_video_inputs_comprehensive():
                         print(f"  📍 Size: {new_widget.get('size')}")
 
                         # Verify widget was actually created by doing a GET
-                        print(f"  🔍 Verifying widget creation with GET request...")
+                        print("  🔍 Verifying widget creation with GET request...")
                         verification_widgets = await client.list_canvas_video_inputs(
                             canvas_id
                         )
@@ -155,7 +155,7 @@ async def test_video_inputs_comprehensive():
                                 break
 
                         if found_widget:
-                            print(f"  ✅ GET Verification: Widget found in canvas list")
+                            print("  ✅ GET Verification: Widget found in canvas list")
                             print(
                                 f"  📍 Verified Location: {found_widget.get('location')}"
                             )
@@ -163,7 +163,7 @@ async def test_video_inputs_comprehensive():
                             print(f"  📍 Verified State: {found_widget.get('state')}")
                         else:
                             print(
-                                f"  ❌ GET Verification: Widget NOT found in canvas list!"
+                                "  ❌ GET Verification: Widget NOT found in canvas list!"
                             )
                             print(
                                 f"  📊 Total widgets in canvas: {len(verification_widgets)}"
@@ -232,9 +232,9 @@ async def test_video_inputs_comprehensive():
                 )
                 print(f"Widget IDs: {test_widget_ids}")
                 print(
-                    f"Locations: Grid starting at (600, 600) with 800px horizontal spacing, 600px vertical spacing"
+                    "Locations: Grid starting at (600, 600) with 800px horizontal spacing, 600px vertical spacing"
                 )
-                print(f"Size: 640x480 each")
+                print("Size: 640x480 each")
                 print(f"Sources: {len(video_input_sources)} different video sources")
 
                 # Wait 5 seconds for validation

@@ -68,7 +68,7 @@ async def test_video_outputs_comprehensive():
                 print(f"  Current source: '{current_source}'")
 
                 # Test suspend (turn off)
-                print(f"  Testing suspend (turn off)...")
+                print("  Testing suspend (turn off)...")
                 try:
                     suspend_payload = {"suspended": True}
                     suspend_result = await client.set_video_output_source(
@@ -83,7 +83,7 @@ async def test_video_outputs_comprehensive():
                 await asyncio.sleep(1)
 
                 # Test unsuspend (turn on)
-                print(f"  Testing unsuspend (turn on)...")
+                print("  Testing unsuspend (turn on)...")
                 try:
                     unsuspend_payload = {"suspended": False}
                     unsuspend_result = await client.set_video_output_source(
@@ -174,7 +174,7 @@ async def test_video_outputs_comprehensive():
                         updated_widget = await client.update_widget(
                             canvas_id, anchor_id, move_payload
                         )
-                        print(f"✅ Successfully moved VideoOutputAnchor widget")
+                        print("✅ Successfully moved VideoOutputAnchor widget")
                         print(f"  New location: {updated_widget.location}")
                         print(f"  New size: {updated_widget.size}")
 
@@ -198,7 +198,7 @@ async def test_video_outputs_comprehensive():
                                     client_id, output_index, source_payload
                                 )
                                 print(
-                                    f"✅ Successfully set video output source to VideoOutputAnchor!"
+                                    "✅ Successfully set video output source to VideoOutputAnchor!"
                                 )
                                 print(f"Result: {json.dumps(source_result, indent=2)}")
                             except CanvusAPIError as e:
@@ -225,7 +225,7 @@ async def test_video_outputs_comprehensive():
                                 canvas_id, anchor_id, restore_payload
                             )
                             print(
-                                f"✅ Successfully restored VideoOutputAnchor to original position"
+                                "✅ Successfully restored VideoOutputAnchor to original position"
                             )
                             print(f"  Restored location: {restored_widget.location}")
                             print(f"  Restored size: {restored_widget.size}")
