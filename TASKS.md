@@ -398,7 +398,7 @@ This document lists all remaining tasks to complete the Canvus Python API implem
     5. Add docstring following Google format
     6. Add unit test
 
-- [ ] **Task 10.1.2**: Implement activate license method
+- [🔄] **Task 10.1.2**: Implement activate license method - Status: In Progress (Issue #30)
   - **Endpoint**: `POST /license/activate`
   - **Method**: `activate_license(key: str) -> Dict[str, Any]`
   - **Implementation Steps**:
