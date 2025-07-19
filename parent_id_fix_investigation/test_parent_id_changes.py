@@ -1,318 +1,244 @@
 #!/usr/bin/env python3
 """
-Parent ID Widget Position Bug Fix Investigation Script
-
-This script investigates the behavior of widget position changes when parent_id is modified.
-It creates test scenarios and collects data to understand the coordinate transformation patterns.
+Test script to investigate parent ID changes between widgets.
+This test creates three notes and changes their parent relationships to understand
+coordinate transformation behavior.
 """
 
 import asyncio
-import csv
 import json
-import sys
+import csv
 from datetime import datetime
-from typing import Dict, List, Any, Optional, Tuple
+from typing import Dict, List, Any
+import sys
 import os
 
-# Add the parent directory to the path to import the client
+# Add the parent directory to the path to import the API client
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from tests.test_config import TestClient, get_test_config
-from canvus_api import CanvusClient
 
 
-class ParentIDInvestigator:
-    """Investigator class for parent ID widget position bug."""
-    
+class ParentIDTest:
     def __init__(self):
         self.config = get_test_config()
         self.test_data = []
-        self.canvas = None
-        self.parent_widgets = {}
-        self.test_notes = {}
+        self.canvas_id = None
+        self.note_ids = []
         
-    async def setup_test_environment(self):
-        """Create test canvas and parent widgets."""
+    async def setup(self):
+        """Set up the test environment"""
         print("🔧 Setting up test environment...")
         
+        # Create test client and authenticate
         async with TestClient(self.config) as test_client:
-            client = test_client.client
+            self.client = test_client.client
             
-            # Create test canvas
-            self.canvas = await client.create_canvas({
-                "name": f"Parent ID Investigation - {datetime.now().strftime('%Y%m%d_%H%M%S')}",
-                "description": "Test canvas for parent ID bug investigation"
-            })
-            print(f"✅ Created test canvas: {self.canvas.id}")
+            # Create a new canvas
+            canvas_payload = {
+                "name": f"Parent ID Test - {datetime.now().strftime('%Y%m%d_%H%M%S')}",
+                "description": "Test canvas for parent ID coordinate transformation investigation"
+            }
+            canvas_data = await self.client.create_canvas(canvas_payload)
+            self.canvas_id = canvas_data.id
+            print(f"✅ Created test canvas: {self.canvas_id}")
             
-            # Create parent widgets at different locations
-            parent_locations = [
-                {"name": "Parent A", "x": 100, "y": 100, "width": 300, "height": 200},
-                {"name": "Parent B", "x": 500, "y": 100, "width": 300, "height": 200},
-                {"name": "Parent C", "x": 100, "y": 400, "width": 300, "height": 200},
-                {"name": "Parent D", "x": 500, "y": 400, "width": 300, "height": 200},
-            ]
-            
-            for i, parent_info in enumerate(parent_locations):
-                parent = await client.create_note(self.canvas.id, {
-                    "content": parent_info["name"],
-                    "location": {"x": parent_info["x"], "y": parent_info["y"]},
-                    "size": {"width": parent_info["width"], "height": parent_info["height"]}
-                })
-                self.parent_widgets[parent_info["name"]] = parent
-                print(f"✅ Created {parent_info['name']}: {parent.id}")
-            
-            # Create a nested parent (child of Parent A)
-            if "Parent A" in self.parent_widgets:
-                nested_parent = await client.create_note(self.canvas.id, {
-                    "content": "Nested Parent",
-                    "location": {"x": 50, "y": 50},
-                    "size": {"width": 200, "height": 100},
-                    "parent_id": self.parent_widgets["Parent A"].id
-                })
-                self.parent_widgets["Nested Parent"] = nested_parent
-                print(f"✅ Created Nested Parent: {nested_parent.id}")
-    
+            # Create test notes within the same context
+            await self.create_test_notes()
+        
     async def create_test_notes(self):
-        """Create test notes at specific locations."""
+        """Create three notes with known positions and sizes"""
         print("📝 Creating test notes...")
         
-        async with TestClient(self.config) as test_client:
-            client = test_client.client
-            
-            # Test note locations (relative to canvas)
-            test_locations = [
-                {"name": "Root Note 1", "x": 200, "y": 200, "parent_id": None},
-                {"name": "Root Note 2", "x": 600, "y": 200, "parent_id": None},
-                {"name": "Root Note 3", "x": 200, "y": 500, "parent_id": None},
-                {"name": "Root Note 4", "x": 600, "y": 500, "parent_id": None},
-            ]
-            
-            for note_info in test_locations:
-                note = await client.create_note(self.canvas.id, {
-                    "content": note_info["name"],
-                    "location": {"x": note_info["x"], "y": note_info["y"]},
-                    "size": {"width": 150, "height": 100},
-                    "parent_id": note_info["parent_id"]
-                })
-                self.test_notes[note_info["name"]] = note
-                print(f"✅ Created {note_info['name']}: {note.id}")
-    
-    async def record_widget_state(self, widget_id: str, description: str) -> Dict[str, Any]:
-        """Record the current state of a widget."""
-        async with TestClient(self.config) as test_client:
-            client = test_client.client
-            
-            widget = await client.get_widget(self.canvas.id, widget_id)
-            return {
-                "description": description,
-                "widget_id": widget_id,
-                "parent_id": widget.parent_id,
-                "loc": widget.location,
-                "scale": widget.scale,
-                "x": widget.location["x"],
-                "y": widget.location["y"],
-                "width": widget.size["width"],
-                "height": widget.size["height"],
-                "timestamp": datetime.now().isoformat()
-            }
-    
-    async def change_parent_and_record(self, widget_id: str, new_parent_id: Optional[str], test_id: str):
-        """Change parent_id and record before/after states."""
-        print(f"🔄 Testing {test_id}: Changing parent_id to {new_parent_id}")
+        if not self.canvas_id:
+            print("❌ No canvas ID available")
+            return
         
-        async with TestClient(self.config) as test_client:
-            client = test_client.client
-            
-            # Record initial state
-            initial_state = await self.record_widget_state(widget_id, f"{test_id} - Initial")
-            
-            # Change parent_id
-            updated_widget = await client.update_widget(self.canvas.id, widget_id, {
-                "parent_id": new_parent_id
-            })
-            
-            # Record final state
-            final_state = await self.record_widget_state(widget_id, f"{test_id} - Final")
-            
-            # Calculate changes
-            loc_change = [
-                final_state["loc"][0] - initial_state["loc"][0],
-                final_state["loc"][1] - initial_state["loc"][1]
-            ]
-            scale_change = [
-                final_state["scale"][0] - initial_state["scale"][0],
-                final_state["scale"][1] - initial_state["scale"][1]
-            ]
-            
-            # Store test data
-            test_record = {
-                "test_id": test_id,
-                "widget_id": widget_id,
-                "initial_parent_id": initial_state["parent_id"],
-                "final_parent_id": final_state["parent_id"],
-                "initial_loc": initial_state["loc"],
-                "final_loc": final_state["loc"],
-                "initial_scale": initial_state["scale"],
-                "final_scale": final_state["scale"],
-                "loc_change": loc_change,
-                "scale_change": scale_change,
-                "initial_x": initial_state["x"],
-                "initial_y": initial_state["y"],
-                "final_x": final_state["x"],
-                "final_y": final_state["y"],
-                "x_change": final_state["x"] - initial_state["x"],
-                "y_change": final_state["y"] - initial_state["y"],
-                "timestamp": datetime.now().isoformat()
-            }
-            
-            self.test_data.append(test_record)
-            print(f"✅ Recorded data for {test_id}")
-            
-            return test_record
-    
-    async def run_test_scenarios(self):
-        """Run all test scenarios."""
-        print("🧪 Running test scenarios...")
+        # Note 1: Top left
+        note1_payload = {
+            "text": "Note 1 - Top Left",
+            "location": {"x": 100, "y": 100},
+            "scale": {"x": 1.0, "y": 1.0},
+            "size": {"width": 200, "height": 150}
+        }
+        note1_data = await self.client.create_note(self.canvas_id, note1_payload)
+        self.note_ids.append(note1_data.id)
+        print(f"✅ Created Note 1: {note1_data.id} at [100, 100]")
         
-        # Scenario 1: Root to Parent
-        for i, (note_name, note) in enumerate(self.test_notes.items()):
-            if note and note.parent_id is None:  # Only test root notes
-                parent_a = self.parent_widgets.get("Parent A")
-                if parent_a:
-                    await self.change_parent_and_record(
-                        note.id, 
-                        parent_a.id,
-                        f"T001_{i+1}_RootToParent"
-                    )
+        # Note 2: Center
+        note2_payload = {
+            "text": "Note 2 - Center",
+            "location": {"x": 400, "y": 300},
+            "scale": {"x": 1.5, "y": 1.5},
+            "size": {"width": 250, "height": 200}
+        }
+        note2_data = await self.client.create_note(self.canvas_id, note2_payload)
+        self.note_ids.append(note2_data.id)
+        print(f"✅ Created Note 2: {note2_data.id} at [400, 300]")
         
-        # Scenario 2: Parent to Parent
-        for i, (note_name, note) in enumerate(self.test_notes.items()):
-            if note.parent_id == self.parent_widgets["Parent A"].id:
-                await self.change_parent_and_record(
-                    note.id,
-                    self.parent_widgets["Parent B"].id,
-                    f"T002_{i+1}_ParentToParent"
-                )
+        # Note 3: Bottom right
+        note3_payload = {
+            "text": "Note 3 - Bottom Right",
+            "location": {"x": 700, "y": 500},
+            "scale": {"x": 0.8, "y": 0.8},
+            "size": {"width": 180, "height": 120}
+        }
+        note3_data = await self.client.create_note(self.canvas_id, note3_payload)
+        self.note_ids.append(note3_data.id)
+        print(f"✅ Created Note 3: {note3_data.id} at [700, 500]")
         
-        # Scenario 3: Parent to Root
-        for i, (note_name, note) in enumerate(self.test_notes.items()):
-            if note.parent_id is not None:
-                await self.change_parent_and_record(
-                    note.id,
-                    None,
-                    f"T003_{i+1}_ParentToRoot"
-                )
+    async def get_widgets_data(self) -> List[Dict[str, Any]]:
+        """Get all widgets data from the canvas"""
+        if not self.canvas_id:
+            return []
+        widgets = await self.client.list_widgets(self.canvas_id)
+        # Convert Widget objects to dictionaries
+        return [widget.model_dump() if hasattr(widget, 'model_dump') else dict(widget) for widget in widgets]
         
-        # Scenario 4: Nested Hierarchy
-        for i, (note_name, note) in enumerate(self.test_notes.items()):
-            if note.parent_id == self.parent_widgets["Parent A"].id:
-                await self.change_parent_and_record(
-                    note.id,
-                    self.parent_widgets["Nested Parent"].id,
-                    f"T004_{i+1}_NestedHierarchy"
-                )
-    
-    def save_results(self):
-        """Save investigation results to files."""
-        print("💾 Saving results...")
+    async def record_widget_state(self, stage: str, widgets: List[Dict[str, Any]]):
+        """Record the current state of all widgets"""
+        print(f"📊 Recording widget state for stage: {stage}")
+        
+        for widget in widgets:
+            if widget.get("type") == "notes" and widget.get("id") in self.note_ids:
+                location = widget.get("location", {})
+                scale = widget.get("scale", {})
+                size = widget.get("size", {})
+                
+                widget_data = {
+                    "stage": stage,
+                    "timestamp": datetime.now().isoformat(),
+                    "widget_id": widget["id"],
+                    "content": widget.get("text", ""),
+                    "parent_id": widget.get("parent_id"),
+                    "location_x": location.get("x", 0),
+                    "location_y": location.get("y", 0),
+                    "scale_x": scale.get("x", 1),
+                    "scale_y": scale.get("y", 1),
+                    "size_width": size.get("width", 0),
+                    "size_height": size.get("height", 0),
+                    "rotation": widget.get("rotation", 0),
+                    "z_index": widget.get("z_index", 0)
+                }
+                self.test_data.append(widget_data)
+                print(f"  📝 {widget['id']}: pos=[{widget_data['location_x']}, {widget_data['location_y']}], "
+                      f"scale=[{widget_data['scale_x']}, {widget_data['scale_y']}], "
+                      f"parent={widget_data['parent_id']}")
+        
+    async def change_parent_id(self, widget_id: str, new_parent_id: str):
+        """Change the parent ID of a widget"""
+        print(f"🔄 Changing parent of {widget_id} to {new_parent_id}")
+        
+        if not self.canvas_id:
+            print("❌ No canvas ID available")
+            return None
+            
+        # Update the widget with new parent_id
+        update_payload = {
+            "parent_id": new_parent_id
+        }
+        
+        try:
+            updated_widget = await self.client.update_note(
+                self.canvas_id,
+                widget_id,
+                update_payload
+            )
+            print(f"✅ Successfully updated parent of {widget_id}")
+            return updated_widget
+        except Exception as e:
+            print(f"❌ Error updating parent: {e}")
+            return None
+            
+    async def run_test_sequence(self):
+        """Run the complete test sequence"""
+        print("🚀 Starting parent ID test sequence...")
+        
+        # Step 1: Get initial state
+        print("\n📋 Step 1: Initial widget state")
+        widgets = await self.get_widgets_data()
+        await self.record_widget_state("INITIAL", widgets)
+        
+        # Step 2: Change Note 1's parent to Note 2
+        print("\n🔄 Step 2: Setting Note 1's parent to Note 2")
+        await self.change_parent_id(self.note_ids[0], self.note_ids[1])
+        
+        # Get state after first change
+        widgets = await self.get_widgets_data()
+        await self.record_widget_state("NOTE1_TO_NOTE2", widgets)
+        
+        # Step 3: Change Note 2's parent to Note 3
+        print("\n🔄 Step 3: Setting Note 2's parent to Note 3")
+        await self.change_parent_id(self.note_ids[1], self.note_ids[2])
+        
+        # Get state after second change
+        widgets = await self.get_widgets_data()
+        await self.record_widget_state("NOTE2_TO_NOTE3", widgets)
+        
+        print("\n✅ Test sequence completed!")
+        
+    async def save_results(self):
+        """Save test results to files"""
+        print("💾 Saving test results...")
+        
+        # Save as JSON
+        json_filename = f"parent_id_test_results_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+        with open(json_filename, 'w') as f:
+            json.dump({
+                "test_info": {
+                    "canvas_id": self.canvas_id,
+                    "note_ids": self.note_ids,
+                    "timestamp": datetime.now().isoformat(),
+                    "description": "Parent ID transition test with three notes"
+                },
+                "test_data": self.test_data
+            }, f, indent=2)
+        print(f"✅ Saved JSON results to: {json_filename}")
         
         # Save as CSV
-        csv_filename = "data_collection_results.csv"
-        with open(csv_filename, 'w', newline='') as csvfile:
-            fieldnames = [
-                'test_id', 'widget_id', 'initial_parent_id', 'final_parent_id',
-                'initial_loc_x', 'initial_loc_y', 'final_loc_x', 'final_loc_y',
-                'initial_scale_x', 'initial_scale_y', 'final_scale_x', 'final_scale_y',
-                'loc_change_x', 'loc_change_y', 'scale_change_x', 'scale_change_y',
-                'initial_x', 'initial_y', 'final_x', 'final_y',
-                'x_change', 'y_change', 'timestamp'
-            ]
-            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-            writer.writeheader()
-            
-            for record in self.test_data:
-                writer.writerow({
-                    'test_id': record['test_id'],
-                    'widget_id': record['widget_id'],
-                    'initial_parent_id': record['initial_parent_id'],
-                    'final_parent_id': record['final_parent_id'],
-                    'initial_loc_x': record['initial_loc'][0],
-                    'initial_loc_y': record['initial_loc'][1],
-                    'final_loc_x': record['final_loc'][0],
-                    'final_loc_y': record['final_loc'][1],
-                    'initial_scale_x': record['initial_scale'][0],
-                    'initial_scale_y': record['initial_scale'][1],
-                    'final_scale_x': record['final_scale'][0],
-                    'final_scale_y': record['final_scale'][1],
-                    'loc_change_x': record['loc_change'][0],
-                    'loc_change_y': record['loc_change'][1],
-                    'scale_change_x': record['scale_change'][0],
-                    'scale_change_y': record['scale_change'][1],
-                    'initial_x': record['initial_x'],
-                    'initial_y': record['initial_y'],
-                    'final_x': record['final_x'],
-                    'final_y': record['final_y'],
-                    'x_change': record['x_change'],
-                    'y_change': record['y_change'],
-                    'timestamp': record['timestamp']
-                })
+        csv_filename = f"parent_id_test_results_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+        if self.test_data:
+            fieldnames = self.test_data[0].keys()
+            with open(csv_filename, 'w', newline='') as f:
+                writer = csv.DictWriter(f, fieldnames=fieldnames)
+                writer.writeheader()
+                writer.writerows(self.test_data)
+        print(f"✅ Saved CSV results to: {csv_filename}")
         
-        # Save as JSON for detailed analysis
-        json_filename = "data_collection_results.json"
-        with open(json_filename, 'w') as jsonfile:
-            json.dump({
-                'canvas_id': self.canvas.id if self.canvas else None,
-                'parent_widgets': {name: widget.id for name, widget in self.parent_widgets.items()},
-                'test_notes': {name: note.id for name, note in self.test_notes.items()},
-                'test_data': self.test_data,
-                'investigation_date': datetime.now().isoformat()
-            }, jsonfile, indent=2)
-        
-        print(f"✅ Saved results to {csv_filename} and {json_filename}")
-        print(f"📊 Collected {len(self.test_data)} test records")
-    
     async def cleanup(self):
-        """Clean up test canvas."""
-        if self.canvas:
-            print(f"🧹 Cleaning up test canvas: {self.canvas.id}")
-            async with TestClient(self.config) as test_client:
-                client = test_client.client
-                await client.delete_canvas(self.canvas.id)
-                print("✅ Test canvas deleted")
+        """Clean up test resources"""
+        print("🧹 Cleaning up test resources...")
+        
+        if self.canvas_id:
+            try:
+                await self.client.delete_canvas(self.canvas_id)
+                print(f"✅ Deleted test canvas: {self.canvas_id}")
+            except Exception as e:
+                print(f"⚠️ Could not delete canvas: {e}")
+                
+    async def run(self):
+        """Run the complete test"""
+        try:
+            await self.setup()
+            await self.run_test_sequence()
+            await self.save_results()
+        except Exception as e:
+            print(f"❌ Test failed: {e}")
+            import traceback
+            traceback.print_exc()
+        finally:
+            await self.cleanup()
 
 
 async def main():
-    """Main investigation function."""
-    print("🔍 Starting Parent ID Widget Position Bug Investigation")
-    print("=" * 60)
+    """Main function"""
+    print("🔬 Parent ID Coordinate Transformation Test")
+    print("=" * 50)
     
-    investigator = ParentIDInvestigator()
+    test = ParentIDTest()
+    await test.run()
     
-    try:
-        # Setup test environment
-        await investigator.setup_test_environment()
-        
-        # Create test notes
-        await investigator.create_test_notes()
-        
-        # Run test scenarios
-        await investigator.run_test_scenarios()
-        
-        # Save results
-        investigator.save_results()
-        
-        print("\n🎉 Investigation completed successfully!")
-        print("📁 Check the generated files for detailed results:")
-        print("   - data_collection_results.csv")
-        print("   - data_collection_results.json")
-        
-    except Exception as e:
-        print(f"❌ Investigation failed: {e}")
-        raise
-    finally:
-        # Cleanup
-        await investigator.cleanup()
+    print("\n🎯 Test completed! Check the generated files for results.")
 
 
 if __name__ == "__main__":
