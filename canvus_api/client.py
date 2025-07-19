@@ -1527,6 +1527,32 @@ class CanvusClient:
 
         return await self._request("POST", "users/login", json_data=payload)
 
+    async def login_saml(self) -> Dict[str, Any]:
+        """Sign in user using SAML authentication.
+
+        This method initiates SAML authentication flow. The server will return
+        SAML-specific response data that may include redirect URLs, SAML tokens,
+        or other authentication information.
+
+        Returns:
+            Dict[str, Any]: SAML login response data
+
+        Raises:
+            CanvusAPIError: If SAML is not configured or authentication fails
+            AuthenticationError: If SAML authentication fails
+
+        Example:
+            >>> try:
+            ...     saml_response = await client.login_saml()
+            ...     print(f"SAML login initiated: {saml_response}")
+            ... except CanvusAPIError as e:
+            ...     if "SAML not configured" in str(e):
+            ...         print("SAML authentication is not available")
+            ...     else:
+            ...         print(f"SAML login failed: {e}")
+        """
+        return await self._request("POST", "users/login/saml")
+
     async def logout(self, token: Optional[str] = None) -> None:
         """Sign out user by invalidating token.
 
