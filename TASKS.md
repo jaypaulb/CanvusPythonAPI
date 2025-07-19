@@ -526,7 +526,7 @@ You will not be able to test this as we don't have an infinite test key to valid
     7. Add docstring following Google format
     8. Add unit test
 
-- [ ] **Task 12.1.2**: Implement get mipmap level image method
+- [✅] **Task 12.1.2**: Implement get mipmap level image method - Status: Completed (Issue #87)
   - **Endpoint**: `GET /mipmaps/{publicHashHex}/{level}`
   - **Method**: `get_mipmap_level_image(public_hash_hex: str, level: int, canvas_id: str) -> bytes`
   - **Implementation Steps**:
