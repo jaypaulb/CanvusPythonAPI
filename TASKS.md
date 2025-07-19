@@ -571,7 +571,7 @@ You will not be able to test this as we don't have an infinite test key to valid
     7. Add docstring following Google format
     8. Add unit test
 
-- [🔄] **Task 13.1.2**: Implement subscribe to annotations method - Status: In Progress (Issue #92)
+- [✅] **Task 13.1.2**: Implement subscribe to annotations method - Status: Completed (Issue #92)
   - **Endpoint**: `GET /canvases/:canvasId/widgets?annotations=1&subscribe=1`
   - **Method**: `subscribe_annotations(canvas_id: str, callback: Optional[Callable] = None) -> AsyncGenerator`
   - **Implementation Steps**:
