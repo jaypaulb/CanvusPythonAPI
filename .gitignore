@@ -66,4 +66,6 @@ Thumbs.db
 # Development and IDE files
 LLM_DEV_GUIDE.md
 .cursor/
-.cursorrules 
+.cursorrules
+TASKS.md
+notes.md
