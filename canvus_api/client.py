@@ -1027,6 +1027,35 @@ class CanvusClient:
             params={"annotations": "1"}
         )
 
+    async def subscribe_annotations(
+        self,
+        canvas_id: str,
+        callback: Optional[Callable[[Dict[str, Any]], None]] = None,
+    ) -> AsyncGenerator[Dict[str, Any], None]:
+        """Subscribe to real-time annotation updates for a canvas.
+
+        Args:
+            canvas_id (str): The ID of the canvas to monitor annotations for
+            callback (Callable, optional): Function to call for each annotation update
+
+        Yields:
+            Dict[str, Any]: Stream of annotation updates
+
+        Raises:
+            CanvusAPIError: If the subscription fails
+
+        Example:
+            >>> async for annotation_update in client.subscribe_annotations("canvas-123"):
+            ...     print(f"Annotation update: {annotation_update}")
+            ...     # Process the annotation update
+        """
+        async for update in self.subscribe(
+            f"canvases/{canvas_id}/widgets",
+            params={"annotations": "1"},
+            callback=callback,
+        ):
+            yield update
+
     # Canvas Background Operations
     async def get_canvas_background(self, canvas_id: str) -> Dict[str, Any]:
         """Get the background configuration for a canvas.
