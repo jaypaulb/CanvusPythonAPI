@@ -439,6 +439,7 @@ This document lists all remaining tasks to complete the Canvus Python API implem
     - ✅ Returns actual license data: {'edition': '', 'has_expired': False, 'is_valid': True, 'max_clients': -1, 'type': 'lifetime'}
 
 - [🔄] **Task 10.1.2**: Implement activate license method - Status: In Progress (Issue #30)
+You will not be able to test this as we don't have an infinite test key to validate.  Skip testing for now on this sectoin.
   - **Endpoint**: `POST /license/activate`
   - **Method**: `activate_license(key: str) -> Dict[str, Any]`
   - **Implementation Steps**:
@@ -450,7 +451,9 @@ This document lists all remaining tasks to complete the Canvus Python API implem
     6. Add docstring following Google format
     7. Add unit test
 
-- [ ] **Task 10.1.3**: Implement request offline activation method
+- [🔄] **Task 10.1.3**: Implement request offline activation method - Status: In Progress (Issue #78)
+You will not be able to test this as we don't have an infinite test key to validate.  Skip testing for now on this sectoin.
+
   - **Endpoint**: `GET /license/request`
   - **Method**: `request_offline_activation(key: str) -> Dict[str, Any]`
   - **Implementation Steps**:
@@ -463,6 +466,8 @@ This document lists all remaining tasks to complete the Canvus Python API implem
     7. Add unit test
 
 - [ ] **Task 10.1.4**: Implement install offline license method
+- You will not be able to test this as we don't have an infinite test key to validate.  Skip testing for now on this sectoin.
+
   - **Endpoint**: `POST /license`
   - **Method**: `install_offline_license(license_data: str) -> Dict[str, Any]`
   - **Implementation Steps**:
