@@ -22,9 +22,11 @@
   "test_data": {
     "test_canvas": {
       "id": "556d6b64-7254-4bb1-a937-f6fe2bdc1afb",
-      "name": "Test Canvas - Auto Generated",
-      "description": "Canvas created by automated tests",
-      "folder_id": null
+      "name": "Test Canvas - Guest Access",
+      "description": "Guest-accessible canvas for testing - all test users can access this canvas",
+      "access": "guest",
+      "folder_id": null,
+      "notes": "This canvas is set to guest access and can be used by any authenticated user for testing"
     },
     "test_folder": {
       "id": null,
@@ -56,7 +58,12 @@
     "use_existing_data": false,
     "parallel_tests": false,
     "test_timeout": 60,
-    "file_upload_timeout": 120
+    "file_upload_timeout": 120,
+    "canvas_testing": {
+      "use_existing_guest_canvas": true,
+      "guest_canvas_id": "556d6b64-7254-4bb1-a937-f6fe2bdc1afb",
+      "notes": "Use the existing guest-accessible canvas for canvas-related tests to avoid permission issues"
+    }
   },
   "endpoints": {
     "server_info": "/api/v1/server-info",

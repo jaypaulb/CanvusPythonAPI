@@ -80,6 +80,18 @@ class TestConfig:
             raise ValueError("Canvas ID not configured in test_config.json")
         return canvas_id
 
+    def get_guest_canvas_id(self) -> str:
+        """Get the guest-accessible canvas ID for testing."""
+        return self.config["test_data"]["test_canvas"]["id"]
+
+    def should_use_existing_guest_canvas(self) -> bool:
+        """Check if tests should use the existing guest canvas."""
+        return (
+            self.config["test_settings"]
+            .get("canvas_testing", {})
+            .get("use_existing_guest_canvas", False)
+        )
+
 
 class TestDataManager:
     """Manages test data creation and cleanup."""
@@ -100,9 +112,20 @@ class TestDataManager:
         folder_data = await self._create_test_folder()
         self.config.set_test_data("test_folder", folder_data)
 
-        # Create test canvas
-        canvas_data = await self._create_test_canvas(folder_data["id"])
-        self.config.set_test_data("test_canvas", canvas_data)
+        # Use existing guest canvas if configured, otherwise create new one
+        if self.config.should_use_existing_guest_canvas():
+            print("Using existing guest-accessible canvas for testing")
+            canvas_data = {
+                "id": self.config.get_guest_canvas_id(),
+                "name": "Test Canvas - Guest Access",
+                "description": "Guest-accessible canvas for testing",
+                "access": "guest",
+            }
+            self.config.set_test_data("test_canvas", canvas_data)
+        else:
+            # Create test canvas
+            canvas_data = await self._create_test_canvas(folder_data["id"])
+            self.config.set_test_data("test_canvas", canvas_data)
 
         # Create test group with unique name
         group_data = await self._create_test_group()
@@ -264,9 +287,6 @@ class TestClient:
 
     async def authenticate(self, use_admin: bool = True) -> None:
         """Authenticate with the server."""
-        if self._authenticated:
-            return
-
         credentials = (
             self.config.admin_credentials if use_admin else self.config.user_credentials
         )
@@ -290,6 +310,18 @@ class TestClient:
             print("Continuing with API key authentication...")
             self._authenticated = True
 
+    async def ensure_authenticated(self, use_admin: bool = True) -> None:
+        """Ensure authentication is valid, re-authenticate if needed."""
+        try:
+            # Test if current authentication is still valid
+            await self.client.get_server_info()
+            # If we get here, authentication is still valid
+            return
+        except Exception:
+            # Authentication is invalid, re-authenticate
+            self._authenticated = False
+            await self.authenticate(use_admin)
+
     def get_test_canvas_id(self) -> str:
         """Get the test canvas ID."""
         canvas_id = self.config.get_test_data_id("test_canvas")
@@ -298,6 +330,10 @@ class TestClient:
                 "Test canvas not found. Run setup_test_environment() first."
             )
         return canvas_id
+
+    def get_guest_canvas_id(self) -> str:
+        """Get the guest-accessible canvas ID for testing."""
+        return self.config.get_guest_canvas_id()
 
     def get_test_folder_id(self) -> str:
         """Get the test folder ID."""

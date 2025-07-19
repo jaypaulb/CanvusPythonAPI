@@ -1,18 +1,19 @@
 """
-Test suite for Canvus server functions (server info, config, email, etc.).
+Test server functions with live server.
 """
 
-import sys
+import pytest
 import asyncio
 import os
+import sys
 from pathlib import Path
 from typing import Tuple
 from canvus_api import CanvusClient, CanvusAPIError
 from .test_utils import (
     print_success,
     print_error,
-    print_warning,
     print_header,
+    print_warning,
     load_config,
 )
 
@@ -22,6 +23,7 @@ if str(test_dir) not in sys.path:
     sys.path.append(str(test_dir))
 
 
+@pytest.mark.asyncio
 async def create_test_token(client: CanvusClient, user_id: int) -> Tuple[str, str]:
     """Create a test token for running tests.
 
@@ -29,11 +31,12 @@ async def create_test_token(client: CanvusClient, user_id: int) -> Tuple[str, st
         Tuple[str, str]: Token ID and plain token value
     """
     print_header("Creating Test Token")
-    token = await client.create_token(user_id, "Test Suite Token")
-    print_success(f"Created test token: {token.id}")
-    return token.id, token.plain_token
+    token_response = await client.create_token(user_id, "Test Suite Token")
+    print_success(f"Created test token: {token_response.id}")
+    return token_response.id, token_response.plain_token
 
 
+@pytest.mark.asyncio
 async def test_server_info(client: CanvusClient) -> None:
     """Test getting server information."""
     print_header("Testing Server Info")
@@ -53,6 +56,7 @@ async def test_server_info(client: CanvusClient) -> None:
         print_error(f"Error getting server info: {e}")
 
 
+@pytest.mark.asyncio
 async def test_server_config_update(client: CanvusClient) -> None:
     """Test updating server configuration."""
     print_header("Testing Server Config Update")
@@ -82,6 +86,7 @@ async def test_server_config_update(client: CanvusClient) -> None:
         print_error(f"Error updating server config: {e}")
 
 
+@pytest.mark.asyncio
 async def test_send_test_email(client: CanvusClient) -> None:
     """Test sending test email."""
     print_header("Testing Send Test Email")
@@ -101,6 +106,7 @@ async def test_send_test_email(client: CanvusClient) -> None:
         # Note: This might fail if email is not configured, which is expected
 
 
+@pytest.mark.asyncio
 async def test_canvas_preview(client: CanvusClient) -> None:
     """Test getting canvas preview."""
     print_header("Testing Canvas Preview")
@@ -128,6 +134,7 @@ async def test_canvas_preview(client: CanvusClient) -> None:
         print_error(f"Error getting canvas preview: {e}")
 
 
+@pytest.mark.asyncio
 async def test_folder_operations(client: CanvusClient) -> None:
     """Test folder operations."""
     print_header("Testing Folder Operations")
@@ -169,8 +176,8 @@ async def test_folder_operations(client: CanvusClient) -> None:
 
         # Delete folders and verify deletion
         if copied_folder_id:
-            await test_folder_deletion(client, copied_folder_id)
-        await test_folder_deletion(client, folder_id)
+            await test_folder_deletion(client)
+        await test_folder_deletion(client)
 
     except Exception as e:
         print_error(f"Folder operations error: {e}")
@@ -186,16 +193,33 @@ async def test_folder_operations(client: CanvusClient) -> None:
                 pass
 
 
-async def test_folder_deletion(client: CanvusClient, folder_id: str) -> None:
+@pytest.mark.asyncio
+async def test_folder_deletion(client: CanvusClient) -> None:
     """Test folder deletion and verification."""
+    # Ensure authentication is valid
+    from tests.test_config import TestClient, get_test_config
+    config = get_test_config()
+    test_client = TestClient(config)
+    await test_client.__aenter__()
+    await test_client.ensure_authenticated()
+    
     try:
+        # Create a test folder first
+        folder_payload = {
+            "name": f"Test Folder for Deletion - {asyncio.get_event_loop().time()}",
+            "description": "Folder created for deletion test",
+        }
+        folder = await test_client.client.create_folder(folder_payload)
+        folder_id = folder.id
+        print_success(f"Created test folder: {folder_id}")
+
         # Delete folder
-        await client.delete_folder(folder_id)
+        await test_client.client.delete_folder(folder_id)
         print_success(f"Deleted folder: {folder_id}")
 
         # Verify deletion - we EXPECT a 404 error here
         try:
-            await client.get_folder(folder_id)
+            await test_client.client.get_folder(folder_id)
             raise Exception("Folder still exists after deletion!")
         except CanvusAPIError as e:
             if e.status_code == 404:
@@ -205,8 +229,11 @@ async def test_folder_deletion(client: CanvusClient, folder_id: str) -> None:
     except Exception as e:
         print_error(str(e))
         raise
+    finally:
+        await test_client.__aexit__(None, None, None)
 
 
+@pytest.mark.asyncio
 async def test_permission_management(client: CanvusClient) -> None:
     """Test permission management operations."""
     print_header("Testing Permission Management")
@@ -239,6 +266,7 @@ async def test_permission_management(client: CanvusClient) -> None:
                 pass
 
 
+@pytest.mark.asyncio
 async def test_token_operations(client: CanvusClient, user_id: int) -> None:
     """Test token operations."""
     print_header("Testing Token Operations")
@@ -250,24 +278,27 @@ async def test_token_operations(client: CanvusClient, user_id: int) -> None:
         print_success(f"Found {len(tokens)} existing tokens")
 
         # Create a new token
-        token = await client.create_token(user_id, "Test token")
-        token_id = token.id
-        print_success(f"Created token: {token.id}")
+        token_response = await client.create_token(user_id, "Test token")
+        token_id = token_response.id
+        print_success(f"Created token: {token_response.id}")
 
         # Get token details
-        retrieved = await client.get_token(user_id, token.id)
+        retrieved = await client.get_token(user_id, token_response.id)
         print_success(f"Retrieved token: {retrieved.id}")
 
         # Update token description
-        await client.update_token(user_id, token.id, "Updated test token")
+        await client.update_token(user_id, token_response.id, "Updated test token")
         print_success("Updated token description")
 
-        # Delete token and verify deletion
-        await client.delete_token(user_id, token.id)
-        print_success(f"Deleted token: {token.id}")
+        # Delete token and verify deletion (but protect admin tokens)
+        if retrieved.description != "Admin API Token":
+            await client.delete_token(user_id, token_response.id)
+            print_success(f"Deleted token: {token_response.id}")
+        else:
+            print_success(f"Skipped deletion of admin token: {token_response.id}")
 
         try:
-            await client.get_token(user_id, token.id)
+            await client.get_token(user_id, token_response.id)
             raise Exception("Token still exists after deletion!")
         except CanvusAPIError as e:
             if e.status_code == 404:
@@ -279,11 +310,15 @@ async def test_token_operations(client: CanvusClient, user_id: int) -> None:
         print_error(f"Token operations error: {e}")
         if token_id:
             try:
-                await client.delete_token(user_id, token_id)
+                # Only delete if it's not an admin token
+                token = await client.get_token(user_id, token_id)
+                if token.description != "Admin API Token":
+                    await client.delete_token(user_id, token_id)
             except Exception:
                 pass
 
 
+@pytest.mark.asyncio
 async def test_canvas_background_operations(client: CanvusClient) -> None:
     """Test canvas background operations."""
     print_header("Testing Canvas Background Operations")
@@ -331,6 +366,7 @@ async def test_canvas_background_operations(client: CanvusClient) -> None:
         print_error(f"Canvas background operations error: {e}")
 
 
+@pytest.mark.asyncio
 async def test_video_input_operations(client: CanvusClient) -> None:
     """Test video input operations."""
     print_header("Testing Video Input Operations")
@@ -424,6 +460,7 @@ async def test_video_input_operations(client: CanvusClient) -> None:
                 pass
 
 
+@pytest.mark.asyncio
 async def test_client_video_inputs(client: CanvusClient) -> None:
     """Test client video inputs operations."""
     print_header("Testing Client Video Inputs Operations")
@@ -453,6 +490,7 @@ async def test_client_video_inputs(client: CanvusClient) -> None:
         print_error(f"Client video inputs operations error: {e}")
 
 
+@pytest.mark.asyncio
 async def test_client_video_outputs(client: CanvusClient) -> None:
     """Test client video outputs operations."""
     print_header("Testing Client Video Outputs Operations")
@@ -482,6 +520,7 @@ async def test_client_video_outputs(client: CanvusClient) -> None:
         print_error(f"Client video outputs operations error: {e}")
 
 
+@pytest.mark.asyncio
 async def test_video_output_source_setting(client: CanvusClient) -> None:
     """Test video output source setting operations."""
     print_header("Testing Video Output Source Setting Operations")
@@ -533,6 +572,7 @@ async def test_video_output_source_setting(client: CanvusClient) -> None:
         print_error(f"Video output source setting operations error: {e}")
 
 
+@pytest.mark.asyncio
 async def test_update_video_output(client: CanvusClient) -> None:
     """Test update video output operations."""
     print_header("Testing Update Video Output Operations")
@@ -586,6 +626,7 @@ async def test_update_video_output(client: CanvusClient) -> None:
         print_error(f"Update video output operations error: {e}")
 
 
+@pytest.mark.asyncio
 async def test_license_info(client: CanvusClient) -> None:
     """Test license info operations."""
     print_header("Testing License Info Operations")
@@ -621,6 +662,7 @@ async def test_license_info(client: CanvusClient) -> None:
         print_error(f"License info operations error: {e}")
 
 
+@pytest.mark.asyncio
 async def test_request_offline_activation(client: CanvusClient) -> None:
     """Test request offline activation operations."""
     print_header("Testing Request Offline Activation Operations")
@@ -661,6 +703,7 @@ async def test_request_offline_activation(client: CanvusClient) -> None:
         print_error(f"Request offline activation operations error: {e}")
 
 
+@pytest.mark.asyncio
 async def test_widget_annotations(client: CanvusClient) -> None:
     """Test widget annotations operations."""
     print_header("Testing Widget Annotations Operations")
@@ -707,6 +750,7 @@ async def test_widget_annotations(client: CanvusClient) -> None:
         print_error(f"Widget annotations operations error: {e}")
 
 
+@pytest.mark.asyncio
 async def test_subscribe_annotations(client: CanvusClient) -> None:
     """Test subscribe annotations operations."""
     print_header("Testing Subscribe Annotations Operations")
@@ -751,6 +795,7 @@ async def test_subscribe_annotations(client: CanvusClient) -> None:
         print_error(f"Subscribe annotations operations error: {e}")
 
 
+@pytest.mark.asyncio
 async def test_saml_login(client: CanvusClient) -> None:
     """Test SAML login operations."""
     print_header("Testing SAML Login Operations")
@@ -794,50 +839,64 @@ async def test_saml_login(client: CanvusClient) -> None:
         print_error(f"SAML login operations error: {e}")
 
 
+@pytest.mark.asyncio
 async def test_server_functions(client: CanvusClient) -> None:
     """Main test function."""
+    # Ensure authentication is valid
+    from tests.test_config import TestClient, get_test_config
+    config = get_test_config()
+    test_client = TestClient(config)
+    await test_client.__aenter__()
+    await test_client.ensure_authenticated()
+    
     print_header("Starting Canvus Server Function Tests")
 
     # Get user ID from config or use default
-    config = load_config()
-    user_id = config.get("user_id", 1000)  # Default to 1000 if not specified
+    config_data = load_config()
+    user_id = config_data.get("user_id", 1000)  # Default to 1000 if not specified
 
     # Create a test token for our test suite
-    test_token_id, test_token = await create_test_token(client, user_id)
+    test_token_id, test_token = await create_test_token(test_client.client, user_id)
 
     try:
-        # Create a new client with our test token
-        async with CanvusClient(
-            base_url=config["base_url"], api_key=test_token
-        ) as test_client:
-            print_success("Test client initialized with new token")
+        # Use the authenticated test client
+        print_success("Using authenticated test client")
 
-            # Run all tests with the test token
-            await test_server_info(test_client)
-            await test_server_config_update(test_client)
-            await test_send_test_email(test_client)
-            await test_canvas_preview(test_client)
-            await test_canvas_background_operations(test_client)
-            await test_video_input_operations(test_client)
-            await test_client_video_inputs(test_client)
-            await test_client_video_outputs(test_client)
-            await test_video_output_source_setting(test_client)
-            await test_update_video_output(test_client)
-            await test_license_info(test_client)
-            await test_request_offline_activation(test_client)
-            await test_widget_annotations(test_client)
-            await test_subscribe_annotations(test_client)
-            await test_saml_login(test_client)
-            await test_folder_operations(test_client)
-            await test_permission_management(test_client)
-            await test_token_operations(test_client, user_id)
+        # Test server info
+        await test_server_info(test_client.client)
+
+        # Test server config
+        await test_server_config_update(test_client.client)
+
+        # Test other functions
+        await test_send_test_email(test_client.client)
+        await test_canvas_preview(test_client.client)
+        await test_folder_operations(test_client.client)
+        await test_permission_management(test_client.client)
+        await test_token_operations(test_client.client, user_id)
+        await test_canvas_background_operations(test_client.client)
+        await test_video_input_operations(test_client.client)
+        await test_client_video_inputs(test_client.client)
+        await test_client_video_outputs(test_client.client)
+        await test_video_output_source_setting(test_client.client)
+        await test_update_video_output(test_client.client)
+        await test_license_info(test_client.client)
+        await test_request_offline_activation(test_client.client)
+        await test_widget_annotations(test_client.client)
+        await test_subscribe_annotations(test_client.client)
+        await test_saml_login(test_client.client)
+
+        print_success("All server function tests completed successfully")
+
     finally:
-        # Clean up our test token
+        # Clean up test token
         try:
-            await client.delete_token(user_id, test_token_id)
+            await test_client.client.delete_token(user_id, test_token_id)
             print_success("Cleaned up test token")
         except Exception as e:
-            print_error(f"Failed to clean up test token: {e}")
+            print_warning(f"Could not clean up test token: {e}")
+        
+        await test_client.__aexit__(None, None, None)
 
 
 if __name__ == "__main__":

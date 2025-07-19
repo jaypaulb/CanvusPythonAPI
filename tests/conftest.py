@@ -6,9 +6,8 @@ import pytest
 import pytest_asyncio
 import asyncio
 from pathlib import Path
-from canvus_api import CanvusClient
 from canvus_api.exceptions import CanvusAPIError
-from .test_utils import load_config
+from .test_config import TestClient, get_test_config
 
 
 @pytest.fixture(scope="session")
@@ -21,27 +20,33 @@ def event_loop():
 
 @pytest_asyncio.fixture(scope="session")
 async def client():
-    """Create a shared client instance for all tests."""
-    config = load_config()
+    """Create a shared client instance for all tests using proper authentication."""
+    config = get_test_config()
 
-    async with CanvusClient(
-        base_url=config["server"]["base_url"],
-        api_key=config["authentication"]["api_key"],
-        verify_ssl=config["server"].get("verify_ssl", False),
-    ) as client:
-        yield client
+    # Use TestClient which handles authentication properly
+    test_client = TestClient(config)
+    await test_client.__aenter__()
+
+    # Ensure authentication is valid before yielding
+    await test_client.ensure_authenticated()
+
+    yield test_client.client
+
+    # Cleanup
+    await test_client.__aexit__(None, None, None)
 
 
 @pytest.fixture(scope="session")
 def test_config():
     """Load test configuration."""
-    return load_config()
+    return get_test_config()
 
 
 @pytest.fixture(scope="session")
 def user_id(test_config):
     """Get user ID from config."""
-    return test_config.get("user_id", 1000)
+    # Use admin user ID from config, defaulting to 1000 if not available
+    return test_config.admin_credentials.get("id", 1000)
 
 
 @pytest.fixture(scope="session")
@@ -99,9 +104,9 @@ async def test_user(client):
         user = await client.create_user(user_payload)
         yield user
 
-        # Cleanup
+        # Cleanup - but don't delete if it's the main test user
         try:
-            if user.id is not None:
+            if user.id is not None and not user.email.startswith("admin@test.local"):
                 await client.delete_user(user.id)
         except Exception:
             pass
@@ -148,9 +153,11 @@ async def test_token(client, user_id):
     token = await client.create_token(user_id, "Test token")
     yield token
 
-    # Cleanup
+    # Cleanup - but don't delete if it's the main admin token
     try:
-        await client.delete_token(user_id, token.id)
+        # Check if this is the main admin token by checking the description
+        if token.description != "Admin API Token":
+            await client.delete_token(user_id, token.id)
     except Exception:
         pass
 

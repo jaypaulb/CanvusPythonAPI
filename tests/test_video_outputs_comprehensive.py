@@ -1,25 +1,16 @@
 #!/usr/bin/env python3
 """
-Comprehensive test for video outputs following the documented workflow.
-This tests both client video outputs and canvas VideoOutputAnchor widgets.
-
-✅ WORKING AS EXPECTED - Video Output Test Results:
-- Client video outputs: Suspend/unsuspend functionality working perfectly
-- VideoOutputAnchor detection: Can read existing widgets successfully
-- VideoOutputAnchor patching: Read-only (expected server limitation)
-- Source assignment: Can set video output source to widget IDs
-- Overall: Core functionality working within server design constraints
-
-The widgets endpoint is read-only for all widget types, which is by design.
-Video outputs can be controlled (suspend/unsuspend) and assigned to widget sources.
+Comprehensive test suite for video output operations.
 """
 
+import pytest
 import asyncio
 import json
 from canvus_api import CanvusClient, CanvusAPIError
 from tests.test_config import get_test_config
 
 
+@pytest.mark.asyncio
 async def test_video_outputs_comprehensive():
     """Test video outputs following the documented workflow."""
     print("🔍 Comprehensive Video Outputs Test")

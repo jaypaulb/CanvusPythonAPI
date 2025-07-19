@@ -1,10 +1,14 @@
-"""Integration tests for audit log methods using live server."""
+"""
+Test audit log integration with live server.
+"""
 
+import pytest
 import asyncio
 
 from tests.test_config import TestClient, get_test_config
 
 
+@pytest.mark.asyncio
 async def test_audit_log_integration():
     """Test audit log methods with live server."""
     print("🔍 Testing Audit Log Integration")

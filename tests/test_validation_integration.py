@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-Integration tests for the recently implemented methods.
-This file validates that the methods actually work with the test server.
+Integration tests for validation methods using live server.
 """
 
+import pytest
 import asyncio
 
 from canvus_api import CanvusClient
@@ -11,6 +11,7 @@ from tests.test_config import get_test_config
 from tests.test_client_manager import setup_test_client, cleanup_test_client
 
 
+@pytest.mark.asyncio
 async def test_list_client_video_outputs_integration():
     """Test list_client_video_outputs method with real server."""
     print("🔍 Testing list_client_video_outputs integration...")
@@ -85,6 +86,7 @@ async def test_list_client_video_outputs_integration():
             return False
 
 
+@pytest.mark.asyncio
 async def test_set_video_output_source_integration():
     """Test set_video_output_source method with real server."""
     print("🔍 Testing set_video_output_source integration...")
@@ -176,6 +178,7 @@ async def test_set_video_output_source_integration():
             return False
 
 
+@pytest.mark.asyncio
 async def test_update_video_output_integration():
     """Test update_video_output method with real server."""
     print("🔍 Testing update_video_output integration...")
@@ -236,6 +239,7 @@ async def test_update_video_output_integration():
             return False
 
 
+@pytest.mark.asyncio
 async def test_get_license_info_integration():
     """Test get_license_info method with real server."""
     print("🔍 Testing get_license_info integration...")

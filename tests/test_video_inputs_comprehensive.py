@@ -23,12 +23,14 @@ Workflow:
 5. Clean up by deleting test widget
 """
 
+import pytest
 import asyncio
 import json
 from canvus_api import CanvusClient, CanvusAPIError
 from tests.test_config import get_test_config
 
 
+@pytest.mark.asyncio
 async def test_video_inputs_comprehensive():
     """Test video inputs following the documented workflow."""
     print("🔍 Comprehensive Video Inputs Test")

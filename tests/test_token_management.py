@@ -4,6 +4,7 @@ Test suite for Canvus access token management.
 
 import sys
 import asyncio
+import pytest
 from pathlib import Path
 from canvus_api import CanvusClient, CanvusAPIError
 from .test_utils import print_success, print_error, print_header, load_config
@@ -14,6 +15,7 @@ if str(test_dir) not in sys.path:
     sys.path.append(str(test_dir))
 
 
+@pytest.mark.asyncio
 async def test_token_lifecycle(client: CanvusClient, user_id: int) -> None:
     """Test the complete lifecycle of a token."""
     print_header("Testing Token Lifecycle")
@@ -25,26 +27,29 @@ async def test_token_lifecycle(client: CanvusClient, user_id: int) -> None:
         print_success(f"Found {len(tokens)} existing tokens")
 
         # Create a new token
-        token = await client.create_token(user_id, "Test token")
-        token_id = token.id
-        print_success(f"Created token: {token.id}")
-        print_success(f"Plain token value: {token.plain_token}")
+        token_response = await client.create_token(user_id, "Test token")
+        token_id = token_response.id
+        print_success(f"Created token: {token_response.id}")
+        print_success(f"Plain token value: {token_response.plain_token}")
 
         # Get token details
-        retrieved = await client.get_token(user_id, token.id)
+        retrieved = await client.get_token(user_id, token_response.id)
         print_success(f"Retrieved token: {retrieved.id}")
 
         # Update token description
-        await client.update_token(user_id, token.id, "Updated test token")
+        await client.update_token(user_id, token_response.id, "Updated test token")
         print_success("Updated token description")
 
-        # Delete token
-        await client.delete_token(user_id, token.id)
-        print_success(f"Deleted token: {token.id}")
+        # Delete token (but protect admin tokens)
+        if retrieved.description != "Admin API Token":
+            await client.delete_token(user_id, token_response.id)
+            print_success(f"Deleted token: {token_response.id}")
+        else:
+            print_success(f"Skipped deletion of admin token: {token_response.id}")
 
         # Verify deletion by trying to get it (should fail with 404)
         try:
-            await client.get_token(user_id, token.id)
+            await client.get_token(user_id, token_response.id)
             raise Exception("Token still exists after deletion!")
         except CanvusAPIError as e:
             if e.status_code == 404:
@@ -56,11 +61,15 @@ async def test_token_lifecycle(client: CanvusClient, user_id: int) -> None:
         print_error(f"Token operations error: {e}")
         if token_id:
             try:
-                await client.delete_token(user_id, token_id)
+                # Only delete if it's not an admin token
+                token = await client.get_token(user_id, token_id)
+                if token.description != "Admin API Token":
+                    await client.delete_token(user_id, token_id)
             except Exception:
                 pass
 
 
+@pytest.mark.asyncio
 async def test_token_management(client: CanvusClient) -> None:
     """Main test function."""
     print_header("Starting Token Management Tests")

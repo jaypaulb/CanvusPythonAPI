@@ -119,7 +119,7 @@ class BaseWidget(BaseModel):
     id: str  # Server-generated UUID v4
     state: str  # Server-managed state
     widget_type: str  # Type of widget
-    depth: int = 0
+    depth: float = 0.0  # Changed from int to float to handle fractional values
     location: Dict[str, float]  # {"x": float, "y": float}
     scale: float = 1.0
     size: Dict[str, float]  # {"width": float, "height": float}
@@ -367,7 +367,7 @@ class VideoInput(BaseModel):
     location: Dict[str, float]  # {"x": float, "y": float}
     size: Dict[str, float]  # {"width": float, "height": float}
     config: Dict[str, Any] = Field(default_factory=dict)
-    depth: int = 1
+    depth: float = 1.0  # Changed from int to float to be consistent
     scale: float = 1.0
     pinned: bool = False
     created_at: Optional[datetime] = None

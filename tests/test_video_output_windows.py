@@ -4,12 +4,14 @@ Comprehensive test for video output windows functionality.
 This test covers all video output operations including source setting and suspend toggling.
 """
 
+import pytest
 import asyncio
 import json
 from canvus_api import CanvusClient, CanvusAPIError
 from tests.test_config import get_test_config
 
 
+@pytest.mark.asyncio
 async def test_video_output_windows():
     """Test all video output window functionality."""
     print("🔍 Testing Video Output Windows")

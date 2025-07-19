@@ -16,6 +16,7 @@ from .test_utils import (
     print_header,
     load_config,
 )
+import pytest
 
 # Add the tests directory to Python path
 test_dir = Path(__file__).parent
@@ -74,6 +75,7 @@ async def wait_for_workspace_canvas(
     return False
 
 
+@pytest.mark.asyncio
 async def test_client_discovery(client: CanvusClient) -> str:
     """Test client listing and admin discovery.
 
@@ -107,11 +109,15 @@ async def test_client_discovery(client: CanvusClient) -> str:
         return ""
 
 
-async def test_workspace_operations(client: CanvusClient, client_id: str) -> None:
+@pytest.mark.asyncio
+async def test_workspace_operations(client: CanvusClient) -> None:
     """Test workspace operations."""
     print_header("Testing Workspace Operations")
 
     try:
+        # Get client ID from the client discovery test
+        client_id = await test_client_discovery(client)
+        
         # 1. List workspaces and get initial state
         workspaces = await client.get_client_workspaces(client_id)
         print_success(f"Listed {len(workspaces)} workspaces")
@@ -321,7 +327,7 @@ async def main():
             return
 
         # Test workspace operations
-        await test_workspace_operations(client, admin_client_id)
+        await test_workspace_operations(client)
 
 
 if __name__ == "__main__":

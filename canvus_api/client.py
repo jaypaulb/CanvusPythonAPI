@@ -1735,7 +1735,7 @@ class CanvusClient:
         Raises:
             CanvusAPIError: If the request fails, group/user not found, or user already in group
         """
-        payload = {"user_id": user_id}
+        payload = {"id": user_id}
         return await self._request(
             "POST", f"groups/{group_id}/members", json_data=payload
         )

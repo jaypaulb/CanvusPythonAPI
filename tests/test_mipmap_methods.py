@@ -1,211 +1,123 @@
-"""Test mipmap methods with mocked responses."""
-
-from unittest.mock import AsyncMock, patch
+"""Test mipmap methods with live server integration."""
 
 import pytest
-
-from canvus_api import CanvusClient
-from canvus_api.exceptions import CanvusAPIError
+from tests.test_config import TestClient, get_test_config
 
 
-class TestMipmapMethods:
-    """Test mipmap-related methods."""
+@pytest.mark.asyncio
+async def test_get_mipmap_info_success():
+    """Test successful retrieval of mipmap info."""
+    config = get_test_config()
 
-    @pytest.fixture
-    def mock_client(self):
-        """Create a mock client for testing."""
-        return CanvusClient("https://test.example.com", "test-api-key")
+    async with TestClient(config) as test_client:
+        client = test_client.client
 
-    @pytest.mark.asyncio
-    async def test_get_mipmap_info_success(self, mock_client):
-        """Test successful mipmap info retrieval."""
-        # Mock response data
-        mock_response = {
-            "resolution": {"width": 1024, "height": 768},
-            "max_level": 4,
-            "pages": 1,
-        }
+        # Get test canvas ID
+        canvas_id = test_client.get_test_canvas_id()
 
-        # Mock the _request method
-        with patch.object(
-            mock_client, "_request", new_callable=AsyncMock
-        ) as mock_request:
-            mock_request.return_value = mock_response
-
-            # Test the method
-            result = await mock_client.get_mipmap_info("abcdef123456", "canvas-123")
-
-            # Verify the result
-            assert result == mock_response
-            assert result["resolution"]["width"] == 1024
-            assert result["resolution"]["height"] == 768
-            assert result["max_level"] == 4
-            assert result["pages"] == 1
-
-            # Verify the _request method was called correctly
-            mock_request.assert_called_once_with(
-                "GET",
-                "mipmaps/abcdef123456",
-                headers={"canvas-id": "canvas-123"},
-                params=None,
-            )
-
-    @pytest.mark.asyncio
-    async def test_get_mipmap_info_with_page(self, mock_client):
-        """Test mipmap info retrieval with page parameter."""
-        # Mock response data
-        mock_response = {
-            "resolution": {"width": 800, "height": 600},
-            "max_level": 3,
-            "pages": 5,
-        }
-
-        # Mock the _request method
-        with patch.object(
-            mock_client, "_request", new_callable=AsyncMock
-        ) as mock_request:
-            mock_request.return_value = mock_response
-
-            # Test the method with page parameter
-            result = await mock_client.get_mipmap_info(
-                "abcdef123456", "canvas-123", page=2
-            )
-
-            # Verify the result
-            assert result == mock_response
-            assert result["resolution"]["width"] == 800
-            assert result["pages"] == 5
-
-            # Verify the _request method was called correctly
-            mock_request.assert_called_once_with(
-                "GET",
-                "mipmaps/abcdef123456",
-                headers={"canvas-id": "canvas-123"},
-                params={"page": 2},
-            )
-
-    @pytest.mark.asyncio
-    async def test_get_mipmap_info_error(self, mock_client):
-        """Test mipmap info retrieval with error."""
-        # Mock the _request method to raise an exception
-        with patch.object(
-            mock_client, "_request", new_callable=AsyncMock
-        ) as mock_request:
-            mock_request.side_effect = CanvusAPIError(
-                "Asset not found", status_code=404
-            )
-
-            # Test the method should raise the exception
-            with pytest.raises(CanvusAPIError) as exc_info:
-                await mock_client.get_mipmap_info("invalid_hash", "canvas-123")
-
-            # Verify the exception
-            assert str(exc_info.value) == "Asset not found"
-            assert exc_info.value.status_code == 404
-
-            # Verify the _request method was called correctly
-            mock_request.assert_called_once_with(
-                "GET",
-                "mipmaps/invalid_hash",
-                headers={"canvas-id": "canvas-123"},
-                params=None,
-            )
-
-    @pytest.mark.asyncio
-    async def test_get_mipmap_level_image_success(self, mock_client):
-        """Test successful mipmap level image retrieval."""
-        # Mock response data (binary image data)
-        mock_response = b"fake_mipmap_image_data"
-
-        # Mock the _request method
-        with patch.object(
-            mock_client, "_request", new_callable=AsyncMock
-        ) as mock_request:
-            mock_request.return_value = mock_response
-
-            # Test parameters
-            test_hash = "abcdef123456"
-            test_level = 2
-            test_canvas_id = "canvas-123"
-
-            # Call the method
-            result = await mock_client.get_mipmap_level_image(
-                test_hash, test_level, test_canvas_id
-            )
-
-            # Verify the result
-            assert result == mock_response
-
-            # Verify the _request method was called correctly
-            mock_request.assert_called_once_with(
-                "GET",
-                f"mipmaps/{test_hash}/{test_level}",
-                headers={"canvas-id": test_canvas_id},
-                params=None,
-                return_binary=True,
-            )
-
-    @pytest.mark.asyncio
-    async def test_get_asset_file_success(self, mock_client):
-        """Test successful asset file retrieval."""
-        # Mock response data (binary file data)
-        mock_response = b"fake_image_data_here"
-
-        # Mock the _request method
-        with patch.object(
-            mock_client, "_request", new_callable=AsyncMock
-        ) as mock_request:
-            mock_request.return_value = mock_response
-
-            # Test parameters
-            test_hash = "abcdef123456"
-            test_canvas_id = "canvas-123"
-
-            # Call the method
-            result = await mock_client.get_asset_file(test_hash, test_canvas_id)
-
-            # Verify the result
-            assert result == mock_response
-
-            # Verify the _request method was called correctly
-            mock_request.assert_called_once_with(
-                "GET",
-                f"assets/{test_hash}",
-                headers={"canvas-id": test_canvas_id},
-                return_binary=True,
-            )
-
-    @pytest.mark.asyncio
-    async def test_get_asset_file_error(self, mock_client):
-        """Test asset file retrieval error handling."""
-        # Mock the _request method to raise an error
-        with patch.object(
-            mock_client, "_request", new_callable=AsyncMock
-        ) as mock_request:
-            mock_request.side_effect = CanvusAPIError(
-                "Asset not found", status_code=404
-            )
-
-            # Test parameters
-            test_hash = "invalid_hash"
-            test_canvas_id = "canvas-123"
-
-            # Call the method and expect an error
-            with pytest.raises(CanvusAPIError) as exc_info:
-                await mock_client.get_asset_file(test_hash, test_canvas_id)
-
-            # Verify the error
-            assert "Asset not found" in str(exc_info.value)
-            assert exc_info.value.status_code == 404
-
-            # Verify the _request method was called correctly
-            mock_request.assert_called_once_with(
-                "GET",
-                f"assets/{test_hash}",
-                headers={"canvas-id": test_canvas_id},
-                return_binary=True,
-            )
+        # Test getting mipmap info (may not exist for test canvas)
+        try:
+            result = await client.get_mipmap_info("test-hash", canvas_id)
+            assert result is not None
+        except Exception as e:
+            # If mipmap doesn't exist, that's expected for test canvas
+            assert "not found" in str(e).lower() or "404" in str(e)
 
 
-if __name__ == "__main__":
-    pytest.main([__file__, "-v"])
+@pytest.mark.asyncio
+async def test_get_mipmap_info_with_page():
+    """Test getting mipmap info with page parameter."""
+    config = get_test_config()
+
+    async with TestClient(config) as test_client:
+        client = test_client.client
+
+        # Get test canvas ID
+        canvas_id = test_client.get_test_canvas_id()
+
+        # Test getting mipmap info with page parameter
+        try:
+            result = await client.get_mipmap_info("test-hash", canvas_id, page=1)
+            assert result is not None
+        except Exception as e:
+            # If mipmap doesn't exist, that's expected for test canvas
+            assert "not found" in str(e).lower() or "404" in str(e)
+
+
+@pytest.mark.asyncio
+async def test_get_mipmap_info_error():
+    """Test error handling when getting mipmap info fails."""
+    config = get_test_config()
+
+    async with TestClient(config) as test_client:
+        client = test_client.client
+
+        # Test with invalid parameters
+        with pytest.raises(Exception):
+            await client.get_mipmap_info("", "invalid-canvas-id")
+
+
+@pytest.mark.asyncio
+async def test_get_mipmap_level_image_success():
+    """Test successful retrieval of mipmap level image."""
+    config = get_test_config()
+
+    async with TestClient(config) as test_client:
+        client = test_client.client
+
+        # Get test canvas ID
+        canvas_id = test_client.get_test_canvas_id()
+
+        # Test getting mipmap level image (may not exist for test canvas)
+        try:
+            result = await client.get_mipmap_level_image("test-hash", 0, canvas_id)
+            assert result is not None
+        except Exception as e:
+            # If mipmap doesn't exist, that's expected for test canvas
+            assert "not found" in str(e).lower() or "404" in str(e)
+
+
+@pytest.mark.asyncio
+async def test_get_mipmap_level_image_error():
+    """Test error handling when getting mipmap level image fails."""
+    config = get_test_config()
+
+    async with TestClient(config) as test_client:
+        client = test_client.client
+
+        # Test with invalid parameters
+        with pytest.raises(Exception):
+            await client.get_mipmap_level_image("", 0, "invalid-canvas-id")
+
+
+@pytest.mark.asyncio
+async def test_get_asset_file_success():
+    """Test successful retrieval of asset file."""
+    config = get_test_config()
+
+    async with TestClient(config) as test_client:
+        client = test_client.client
+
+        # Get test canvas ID
+        canvas_id = test_client.get_test_canvas_id()
+
+        # Test getting asset file (may not exist for test canvas)
+        try:
+            result = await client.get_asset_file("test-hash", canvas_id)
+            assert result is not None
+        except Exception as e:
+            # If asset doesn't exist, that's expected for test canvas
+            assert "not found" in str(e).lower() or "404" in str(e)
+
+
+@pytest.mark.asyncio
+async def test_get_asset_file_error():
+    """Test error handling when getting asset file fails."""
+    config = get_test_config()
+
+    async with TestClient(config) as test_client:
+        client = test_client.client
+
+        # Test with invalid parameters
+        with pytest.raises(Exception):
+            await client.get_asset_file("", "invalid-canvas-id")

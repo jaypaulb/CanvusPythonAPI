@@ -206,15 +206,14 @@ class TestUserManagement:
     @pytest.mark.asyncio
     async def test_login(self, client: CanvusClient, test_config):
         """Test user login."""
-        # Test login with admin credentials
-        admin_creds = test_config.get("admin_credentials", {})
-        if admin_creds:
-            result = await client.login(
-                email=admin_creds.get("email"), password=admin_creds.get("password")
-            )
-            assert isinstance(result, dict)
-            assert "token" in result
-            assert "user" in result
+        # Test login with admin credentials from config
+        result = await client.login(
+            email=test_config.admin_credentials["email"],
+            password=test_config.admin_credentials["password"],
+        )
+        assert isinstance(result, dict)
+        assert "token" in result
+        assert "user" in result
 
     @pytest.mark.asyncio
     async def test_login_saml(self, client: CanvusClient):

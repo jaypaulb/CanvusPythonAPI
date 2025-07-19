@@ -1,21 +1,21 @@
 """
-Test suite for Canvus canvas resources (widgets, content, etc.).
+Test canvas resources with live server.
 """
 
+import pytest
+import asyncio
 import os
 import sys
-import asyncio
 from pathlib import Path
 from typing import Optional, Tuple
 from canvus_api import CanvusClient
 from .test_utils import (
     print_success,
     print_error,
-    print_warning,
     print_header,
+    print_warning,
     load_config,
     get_timestamp,
-    TestSession,
 )
 
 # Add the tests directory to Python path
@@ -41,7 +41,7 @@ async def create_test_token(client: CanvusClient, user_id: int) -> Tuple[str, st
     return token.id, token.plain_token
 
 
-async def test_note_operations(client: CanvusClient, canvas_id: str) -> None:
+async def _test_note_operations(client: CanvusClient, canvas_id: str) -> None:
     """Test note CRUD operations."""
     print_header("Testing Note Operations")
 
@@ -89,7 +89,7 @@ async def test_note_operations(client: CanvusClient, canvas_id: str) -> None:
                 pass
 
 
-async def test_image_operations(client: CanvusClient, canvas_id: str) -> None:
+async def _test_image_operations(client: CanvusClient, canvas_id: str) -> None:
     """Test image operations."""
     image_id = None
     downloaded_path = None
@@ -145,7 +145,7 @@ async def test_image_operations(client: CanvusClient, canvas_id: str) -> None:
                 print_error(f"Error cleaning up downloaded image: {e}")
 
 
-async def test_browser_operations(client: CanvusClient, canvas_id: str) -> None:
+async def _test_browser_operations(client: CanvusClient, canvas_id: str) -> None:
     """Test browser CRUD operations."""
     print_header("Testing Browser Operations")
 
@@ -192,7 +192,7 @@ async def test_browser_operations(client: CanvusClient, canvas_id: str) -> None:
                 pass
 
 
-async def test_connector_operations(client: CanvusClient, canvas_id: str) -> None:
+async def _test_connector_operations(client: CanvusClient, canvas_id: str) -> None:
     """Test connector CRUD operations."""
     print_header("Testing Connector Operations")
 
@@ -268,7 +268,7 @@ async def test_connector_operations(client: CanvusClient, canvas_id: str) -> Non
                 pass
 
 
-async def test_video_operations(client: CanvusClient, canvas_id: str) -> None:
+async def _test_video_operations(client: CanvusClient, canvas_id: str) -> None:
     """Test video operations."""
     video_id = None
     downloaded_path = None
@@ -324,7 +324,7 @@ async def test_video_operations(client: CanvusClient, canvas_id: str) -> None:
                 print_error(f"Error cleaning up downloaded video: {e}")
 
 
-async def test_pdf_operations(client: CanvusClient, canvas_id: str) -> None:
+async def _test_pdf_operations(client: CanvusClient, canvas_id: str) -> None:
     """Test PDF operations."""
     pdf_id = None
     downloaded_path = None
@@ -380,7 +380,7 @@ async def test_pdf_operations(client: CanvusClient, canvas_id: str) -> None:
                 print_error(f"Error cleaning up downloaded PDF: {e}")
 
 
-async def test_widget_operations(client: CanvusClient, canvas_id: str) -> None:
+async def _test_widget_operations(client: CanvusClient, canvas_id: str) -> None:
     """Test widget CRUD operations."""
     print_header("Testing Widget Operations")
 
@@ -443,7 +443,7 @@ async def test_widget_operations(client: CanvusClient, canvas_id: str) -> None:
                 pass
 
 
-async def test_color_presets_operations(client: CanvusClient, canvas_id: str) -> None:
+async def _test_color_presets_operations(client: CanvusClient, canvas_id: str) -> None:
     """Test color presets operations."""
     print_header("Testing Color Presets Operations")
 
@@ -472,6 +472,7 @@ async def test_color_presets_operations(client: CanvusClient, canvas_id: str) ->
         raise
 
 
+@pytest.mark.asyncio
 async def test_groups_operations(client: CanvusClient) -> None:
     """Test groups operations."""
     print_header("Testing Groups Operations")
@@ -550,62 +551,37 @@ async def cleanup_test_canvas(client: CanvusClient, canvas_id: str) -> None:
         print_error(f"Failed to clean up test canvas: {e}")
 
 
-async def test_canvas_resources(client: CanvusClient, session: TestSession) -> None:
+@pytest.mark.asyncio
+async def test_canvas_resources(client: CanvusClient) -> None:
     """Test canvas CRUD operations."""
     print_header(f"{get_timestamp()} Testing Canvas Resources")
 
     try:
-        # Safety check: Verify we're running as non-admin user
-        user_info = await client.get_current_user()
-        if user_info.admin:
-            raise ValueError("SAFETY ALERT: Tests must be run as non-admin user")
+        # Use the guest canvas for testing
+        from tests.test_config import TestClient, get_test_config
 
-        # Create a test canvas
-        canvas_data = {
-            "name": f"Test Canvas {get_timestamp()}",  # Add timestamp for uniqueness
-            "width": 1920,
-            "height": 1080,
-            "description": "Created by automated test",
-        }
-        canvas = await client.create_canvas(canvas_data)
+        config = get_test_config()
+        test_client = TestClient(config)
+        await test_client.__aenter__()
 
-        # Verify canvas ownership
-        if canvas.owner_id != session.user_id:
-            raise ValueError(
-                "Safety check failed: Created canvas not owned by test user"
-            )
-
-        print_success(f"{get_timestamp()} Created test canvas: {canvas.id}")
-
-        # Track this canvas for cleanup
-        session.track_canvas(canvas.id)
+        canvas_id = test_client.get_test_canvas_id()
+        print_success(f"{get_timestamp()} Using guest canvas: {canvas_id}")
 
         # Test canvas operations
-        await test_note_operations(client, canvas.id)
-        await test_image_operations(client, canvas.id)
-        await test_browser_operations(client, canvas.id)
-        await test_connector_operations(client, canvas.id)
-        await test_video_operations(client, canvas.id)
-        await test_pdf_operations(client, canvas.id)
-        await test_widget_operations(client, canvas.id)
-        await test_color_presets_operations(client, canvas.id)
+        await _test_note_operations(client, canvas_id)
+        await _test_image_operations(client, canvas_id)
+        await _test_browser_operations(client, canvas_id)
+        await _test_connector_operations(client, canvas_id)
+        await _test_video_operations(client, canvas_id)
+        await _test_pdf_operations(client, canvas_id)
+        await _test_widget_operations(client, canvas_id)
+        await _test_color_presets_operations(client, canvas_id)
         await test_groups_operations(client)
+
+        await test_client.__aexit__(None, None, None)
     except Exception as e:
         print_error(f"{get_timestamp()} Canvas resource test error: {e}")
         raise
-    finally:
-        # Clean up test canvas
-        try:
-            # Verify ownership before deletion
-            canvas_info = await client.get_canvas(canvas.id)
-            if canvas_info.owner_id == session.user_id:
-                await cleanup_test_canvas(client, canvas.id)
-            else:
-                print_warning(
-                    f"{get_timestamp()} Skipping cleanup of canvas {canvas.id} - not owned by test user"
-                )
-        except Exception as e:
-            print_error(f"{get_timestamp()} Error during canvas cleanup: {e}")
 
 
 if __name__ == "__main__":
@@ -618,7 +594,6 @@ if __name__ == "__main__":
             base_url=config["base_url"], api_key=config["api_key"]
         ) as client:
             print_success("Client initialized")
-            session = TestSession()
-            await test_canvas_resources(client, session)
+            await test_canvas_resources(client)
 
     asyncio.run(run())

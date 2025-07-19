@@ -1,11 +1,12 @@
 """
-Simple test to verify server connection and authentication.
+Test server connection and basic operations.
 """
 
-import asyncio
+import pytest
 from tests.test_config import TestClient, get_test_config
 
 
+@pytest.mark.asyncio
 async def test_server_connection():
     """Test basic server connection and authentication."""
     print("Testing server connection...")
@@ -61,6 +62,7 @@ async def test_server_connection():
         return False
 
 
+@pytest.mark.asyncio
 async def test_authentication():
     """Test authentication with provided credentials."""
     print("\nTesting authentication...")
@@ -95,6 +97,7 @@ async def test_authentication():
         return False
 
 
+@pytest.mark.asyncio
 async def test_file_operations():
     """Test basic file operations."""
     print("\nTesting file operations...")
@@ -135,6 +138,7 @@ async def test_file_operations():
         return False
 
 
+@pytest.mark.asyncio
 async def main():
     """Run all connection tests."""
     print("🔍 Testing Canvus Server Connection")
@@ -162,4 +166,6 @@ async def main():
 
 
 if __name__ == "__main__":
+    import asyncio
+
     asyncio.run(main())

@@ -3,9 +3,11 @@
 import asyncio
 import os
 
+import pytest
 from tests.test_config import TestClient, get_test_config
 
 
+@pytest.mark.asyncio
 async def test_image_mipmap_integration():
     """Test mipmap methods with image assets using live server."""
     print("🔍 Testing Image Mipmap Integration")
@@ -175,6 +177,7 @@ async def test_image_mipmap_integration():
             raise
 
 
+@pytest.mark.asyncio
 async def test_pdf_mipmap_integration():
     """Test mipmap methods with PDF assets using live server."""
     print("🔍 Testing PDF Mipmap Integration")
@@ -357,6 +360,7 @@ async def test_pdf_mipmap_integration():
             raise
 
 
+@pytest.mark.asyncio
 async def test_mipmap_error_handling():
     """Test mipmap error handling with invalid hashes."""
     print("🔍 Testing Mipmap Error Handling")
@@ -392,6 +396,7 @@ async def test_mipmap_error_handling():
             raise
 
 
+@pytest.mark.asyncio
 async def test_mipmap_integration():
     """Run all mipmap integration tests."""
     print("🚀 Running All Mipmap Integration Tests")
