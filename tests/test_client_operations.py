@@ -117,7 +117,7 @@ async def test_workspace_operations(client: CanvusClient) -> None:
     try:
         # Get client ID from the client discovery test
         client_id = await test_client_discovery(client)
-        
+
         # 1. List workspaces and get initial state
         workspaces = await client.get_client_workspaces(client_id)
         print_success(f"Listed {len(workspaces)} workspaces")

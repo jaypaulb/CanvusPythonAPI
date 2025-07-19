@@ -198,11 +198,12 @@ async def test_folder_deletion(client: CanvusClient) -> None:
     """Test folder deletion and verification."""
     # Ensure authentication is valid
     from tests.test_config import TestClient, get_test_config
+
     config = get_test_config()
     test_client = TestClient(config)
     await test_client.__aenter__()
     await test_client.ensure_authenticated()
-    
+
     try:
         # Create a test folder first
         folder_payload = {
@@ -844,11 +845,12 @@ async def test_server_functions(client: CanvusClient) -> None:
     """Main test function."""
     # Ensure authentication is valid
     from tests.test_config import TestClient, get_test_config
+
     config = get_test_config()
     test_client = TestClient(config)
     await test_client.__aenter__()
     await test_client.ensure_authenticated()
-    
+
     print_header("Starting Canvus Server Function Tests")
 
     # Get user ID from config or use default
@@ -895,7 +897,7 @@ async def test_server_functions(client: CanvusClient) -> None:
             print_success("Cleaned up test token")
         except Exception as e:
             print_warning(f"Could not clean up test token: {e}")
-        
+
         await test_client.__aexit__(None, None, None)
 
 
