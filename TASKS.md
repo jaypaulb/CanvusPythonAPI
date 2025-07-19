@@ -346,7 +346,7 @@ This document lists all remaining tasks to complete the Canvus Python API implem
     7. Add unit test
 
 ### 9.2 Video Outputs Management
-- [ ] **Task 9.2.1**: Implement list client video outputs method
+- [🔄] **Task 9.2.1**: Implement list client video outputs method - Status: In Progress (Issue #70)
   - **Endpoint**: `GET /clients/:client_id/video-outputs`
   - **Method**: `list_client_video_outputs(client_id: str) -> List[Dict[str, Any]]`
   - **Implementation Steps**:
