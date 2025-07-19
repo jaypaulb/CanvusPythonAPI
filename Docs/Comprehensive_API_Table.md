@@ -8,8 +8,8 @@ This table provides a complete list of all Canvus API endpoints, organized by re
 |----------|--------|------|----------------|-------------|---------------|
 | Server Info | GET | `/server-info` | - | Get server information | `get_server_info()` |
 | Server Config | GET | `/server-config` | - | Get server configuration | `get_server_config()` |
-| Server Config | PATCH | `/server-config` | settings (body) | Update server settings | - |
-| Server Config | POST | `/server-config/send-test-email` | - | Send test email | - |
+| Server Config | PATCH | `/server-config` | settings (body) | Update server settings | `update_server_config(payload)` |
+| Server Config | POST | `/server-config/send-test-email` | - | Send test email | `send_test_email()` |
 
 ## Canvas Management
 
@@ -20,7 +20,7 @@ This table provides a complete list of all Canvus API endpoints, organized by re
 | Canvases | POST | `/canvases` | name, folder_id (body) | Create a canvas | `create_canvas(payload)` |
 | Canvases | PATCH | `/canvases/:id` | id (path), name, mode (body) | Update canvas properties | `update_canvas(canvas_id, payload)` |
 | Canvases | DELETE | `/canvases/:id` | id (path) | Delete a canvas | `delete_canvas(canvas_id)` |
-| Canvases | GET | `/canvases/:id/preview` | id (path) | Get canvas preview | - |
+| Canvases | GET | `/canvases/:id/preview` | id (path) | Get canvas preview | `get_canvas_preview(canvas_id)` |
 | Canvases | POST | `/canvases/:id/restore` | id (path) | Restore demo canvas | `restore_demo_state(canvas_id)` |
 | Canvases | POST | `/canvases/:id/save` | id (path) | Save demo state | `save_demo_state(canvas_id)` |
 | Canvases | POST | `/canvases/:id/move` | id, folder_id (path/body) | Move canvas to folder | `move_canvas(canvas_id, folder_id)` |
@@ -37,9 +37,9 @@ This table provides a complete list of all Canvus API endpoints, organized by re
 | Canvas Folders | POST | `/canvas-folders` | name, folder_id (body) | Create a folder | `create_folder(payload)` |
 | Canvas Folders | PATCH | `/canvas-folders/:id` | id (path), name (body) | Update folder properties | `update_folder(folder_id, payload)` |
 | Canvas Folders | POST | `/canvas-folders/:id/move` | id, folder_id (path/body) | Move folder | `move_folder(folder_id, payload)` |
-| Canvas Folders | POST | `/canvas-folders/:id/copy` | id, folder_id (path/body) | Copy a folder | - |
+| Canvas Folders | POST | `/canvas-folders/:id/copy` | id, folder_id (path/body) | Copy a folder | `copy_folder(folder_id, payload)` |
 | Canvas Folders | DELETE | `/canvas-folders/:id` | id (path) | Delete a folder | `delete_folder(folder_id)` |
-| Canvas Folders | DELETE | `/canvas-folders/:id/children` | id (path) | Delete all children of a folder | - |
+| Canvas Folders | DELETE | `/canvas-folders/:id/children` | id (path) | Delete all children of a folder | `delete_folder_children(folder_id)` |
 | Canvas Folders | GET | `/canvas-folders/:id/permissions` | id (path) | Get folder permissions | `get_folder_permissions(folder_id)` |
 | Canvas Folders | POST | `/canvas-folders/:id/permissions` | id (path), permissions (body) | Set folder permissions | `set_folder_permissions(folder_id, payload)` |
 
@@ -122,24 +122,24 @@ This table provides a complete list of all Canvus API endpoints, organized by re
 |----------|--------|------|----------------|-------------|---------------|
 | Widgets | GET | `/canvases/:id/widgets` | id (path) | List all widgets in canvas | `list_widgets(canvas_id)` |
 | Widgets | GET | `/canvases/:id/widgets/:widget_id` | id, widget_id (path) | Get a single widget | `get_widget(canvas_id, widget_id)` |
-| Widgets | POST | `/canvases/:id/widgets` | id (path), widget (body) | Create a widget | - |
-| Widgets | PATCH | `/canvases/:id/widgets/:widget_id` | id, widget_id (path), widget (body) | Update a widget | - |
-| Widgets | DELETE | `/canvases/:id/widgets/:widget_id` | id, widget_id (path) | Delete a widget | - |
+| Widgets | POST | `/canvases/:id/widgets` | id (path), widget (body) | Create a widget | `create_widget(canvas_id, payload)` |
+| Widgets | PATCH | `/canvases/:id/widgets/:widget_id` | id, widget_id (path), widget (body) | Update a widget | `update_widget(canvas_id, widget_id, payload)` |
+| Widgets | DELETE | `/canvases/:id/widgets/:widget_id` | id, widget_id (path) | Delete a widget | `delete_widget(canvas_id, widget_id)` |
 
 ## Canvas Backgrounds
 
 | Resource | Method | Path | Key Parameters | Description | Python Method |
 |----------|--------|------|----------------|-------------|---------------|
-| Canvas Backgrounds | GET | `/canvases/:id/background` | id (path) | Get canvas background | - |
-| Canvas Backgrounds | PATCH | `/canvases/:id/background` | id (path), background (body) | Set canvas background | - |
-| Canvas Backgrounds | POST | `/canvases/:id/background` | id (path), image (multipart) | Set canvas background image | - |
+| Canvas Backgrounds | GET | `/canvases/:id/background` | id (path) | Get canvas background | `get_canvas_background(canvas_id)` |
+| Canvas Backgrounds | PATCH | `/canvases/:id/background` | id (path), background (body) | Set canvas background | `set_canvas_background(canvas_id, payload)` |
+| Canvas Backgrounds | POST | `/canvases/:id/background` | id (path), image (multipart) | Set canvas background image | `set_canvas_background_image(canvas_id, file_path)` |
 
 ## Canvas Color Presets
 
 | Resource | Method | Path | Key Parameters | Description | Python Method |
 |----------|--------|------|----------------|-------------|---------------|
-| Color Presets | GET | `/canvases/:canvasId/color-presets` | canvasId (path) | Get color presets for canvas | - |
-| Color Presets | PATCH | `/canvases/:canvasId/color-presets` | canvasId (path), presets (body) | Update color presets | - |
+| Color Presets | GET | `/canvases/:canvasId/color-presets` | canvasId (path) | Get color presets for canvas | `get_color_presets(canvas_id)` |
+| Color Presets | PATCH | `/canvases/:canvasId/color-presets` | canvasId (path), presets (body) | Update color presets | `update_color_presets(canvas_id, payload)` |
 
 ## Uploads Folder
 
@@ -168,7 +168,7 @@ This table provides a complete list of all Canvus API endpoints, organized by re
 | Users | POST | `/users/logout` | token (body) | Logout user | `logout(token)` |
 | Users | POST | `/users/:id/block` | id (path) | Block user | `block_user(user_id)` |
 | Users | POST | `/users/:id/unblock` | id (path) | Unblock user (admin) | `unblock_user(user_id)` |
-| Users | POST | `/users/login/saml` | - | SAML login | - |
+| Users | POST | `/users/login/saml` | - | SAML login | `login_saml()` |
 
 ## Access Tokens
 
@@ -184,20 +184,20 @@ This table provides a complete list of all Canvus API endpoints, organized by re
 
 | Resource | Method | Path | Key Parameters | Description | Python Method |
 |----------|--------|------|----------------|-------------|---------------|
-| Groups | GET | `/groups` | - | List all user groups | - |
-| Groups | GET | `/groups/:id` | id (path) | Get a single group | - |
-| Groups | POST | `/groups` | name, description (body) | Create a new group | - |
-| Groups | DELETE | `/groups/:id` | id (path) | Delete a group | - |
-| Groups | POST | `/groups/:group_id/members` | group_id (path), id (body) | Add user to group | - |
-| Groups | GET | `/groups/:id/members` | id (path) | List group members | - |
-| Groups | DELETE | `/groups/:group_id/members/:user_id` | group_id, user_id (path) | Remove user from group | - |
+| Groups | GET | `/groups` | - | List all user groups | `list_groups()` |
+| Groups | GET | `/groups/:id` | id (path) | Get a single group | `get_group(group_id)` |
+| Groups | POST | `/groups` | name, description (body) | Create a new group | `create_group(payload)` |
+| Groups | DELETE | `/groups/:id` | id (path) | Delete a group | `delete_group(group_id)` |
+| Groups | POST | `/groups/:group_id/members` | group_id (path), id (body) | Add user to group | `add_user_to_group(group_id, user_id)` |
+| Groups | GET | `/groups/:id/members` | id (path) | List group members | `list_group_members(group_id)` |
+| Groups | DELETE | `/groups/:group_id/members/:user_id` | group_id, user_id (path) | Remove user from group | `remove_user_from_group(group_id, user_id)` |
 
 ## Clients & Workspaces
 
 | Resource | Method | Path | Key Parameters | Description | Python Method |
 |----------|--------|------|----------------|-------------|---------------|
 | Clients | GET | `/clients` | - | List all connected clients | `list_clients()` |
-| Clients | GET | `/clients/:id` | id (path) | Get a single client | - |
+| Clients | GET | `/clients/:id` | id (path) | Get a single client | `get_client(client_id)` |
 | Workspaces | GET | `/clients/:client_id/workspaces` | client_id (path) | List client workspaces | `list_workspaces(client_id)` |
 | Workspaces | GET | `/clients/:client_id/workspaces/:workspace_index` | client_id, workspace_index (path) | Get a single workspace | `get_workspace(client_id, workspace_index)` |
 | Workspaces | PATCH | `/clients/:client_id/workspaces/:workspace_index` | client_id, workspace_index (path), params (body) | Update workspace | `update_workspace(client_id, workspace_index, payload)` |
@@ -206,44 +206,44 @@ This table provides a complete list of all Canvus API endpoints, organized by re
 
 | Resource | Method | Path | Key Parameters | Description | Python Method |
 |----------|--------|------|----------------|-------------|---------------|
-| Video Inputs | GET | `/canvases/:id/video-inputs` | id (path) | List video input widgets | - |
-| Video Inputs | POST | `/canvases/:id/video-inputs` | id (path), widget (body) | Create video input widget | - |
-| Video Inputs | DELETE | `/canvases/:id/video-inputs/:input_id` | id, input_id (path) | Delete video input widget | - |
-| Video Inputs | GET | `/clients/:client_id/video-inputs` | client_id (path) | List client video inputs | - |
-| Video Outputs | GET | `/clients/:client_id/video-outputs` | client_id (path) | List client video outputs | - |
-| Video Outputs | PATCH | `/clients/:client_id/video-outputs/:index` | client_id, index (path), source/suspended (body) | Set video output source | - |
-| Video Outputs | PATCH | `/canvases/:id/video-outputs/:output_id` | id, output_id (path), name/resolution (body) | Update video output | - |
+| Video Inputs | GET | `/canvases/:id/video-inputs` | id (path) | List video input widgets | `list_canvas_video_inputs(canvas_id)` |
+| Video Inputs | POST | `/canvases/:id/video-inputs` | id (path), widget (body) | Create video input widget | `create_video_input(canvas_id, payload)` |
+| Video Inputs | DELETE | `/canvases/:id/video-inputs/:input_id` | id, input_id (path) | Delete video input widget | `delete_video_input(canvas_id, input_id)` |
+| Video Inputs | GET | `/clients/:client_id/video-inputs` | client_id (path) | List client video inputs | `list_client_video_inputs(client_id)` |
+| Video Outputs | GET | `/clients/:client_id/video-outputs` | client_id (path) | List client video outputs | `list_client_video_outputs(client_id)` |
+| Video Outputs | PATCH | `/clients/:client_id/video-outputs/:index` | client_id, index (path), source/suspended (body) | Set video output source | `set_video_output_source(client_id, index, payload)` |
+| Video Outputs | PATCH | `/canvases/:id/video-outputs/:output_id` | id, output_id (path), name/resolution (body) | Update video output | `update_video_output(canvas_id, output_id, payload)` |
 
 ## License Management
 
 | Resource | Method | Path | Key Parameters | Description | Python Method |
 |----------|--------|------|----------------|-------------|---------------|
-| License | GET | `/license` | - | Get license info | - |
-| License | POST | `/license/activate` | key (body) | Activate license online | - |
-| License | GET | `/license/request` | key (query) | Generate offline activation request | - |
-| License | POST | `/license` | license (body) | Install offline license | - |
+| License | GET | `/license` | - | Get license info | `get_license_info()` |
+| License | POST | `/license/activate` | key (body) | Activate license online | `activate_license(key)` |
+| License | GET | `/license/request` | key (query) | Generate offline activation request | `request_offline_activation(key)` |
+| License | POST | `/license` | license (body) | Install offline license | `install_offline_license(license_data)` |
 
 ## Audit Log
 
 | Resource | Method | Path | Key Parameters | Description | Python Method |
 |----------|--------|------|----------------|-------------|---------------|
-| Audit Log | GET | `/audit-log` | filters (query) | Get audit events (paginated) | - |
-| Audit Log | GET | `/audit-log/export-csv` | filters (query) | Export audit log as CSV | - |
+| Audit Log | GET | `/audit-log` | filters (query) | Get audit events (paginated) | `get_audit_log(filters)` |
+| Audit Log | GET | `/audit-log/export-csv` | filters (query) | Export audit log as CSV | `export_audit_log_csv(filters)` |
 
 ## Mipmaps & Assets
 
 | Resource | Method | Path | Key Parameters | Description | Python Method |
 |----------|--------|------|----------------|-------------|---------------|
-| Mipmaps | GET | `/mipmaps/{publicHashHex}` | publicHashHex (path), canvas-id (header) | Get mipmap info | - |
-| Mipmaps | GET | `/mipmaps/{publicHashHex}/{level}` | publicHashHex, level (path), canvas-id (header) | Get mipmap level image | - |
-| Assets | GET | `/assets/{publicHashHex}` | publicHashHex (path), canvas-id (header) | Get asset file by hash | - |
+| Mipmaps | GET | `/mipmaps/{publicHashHex}` | publicHashHex (path), canvas-id (header) | Get mipmap info | `get_mipmap_info(public_hash_hex, canvas_id)` |
+| Mipmaps | GET | `/mipmaps/{publicHashHex}/{level}` | publicHashHex, level (path), canvas-id (header) | Get mipmap level image | `get_mipmap_level_image(public_hash_hex, level, canvas_id)` |
+| Assets | GET | `/assets/{publicHashHex}` | publicHashHex (path), canvas-id (header) | Get asset file by hash | `get_asset_file(public_hash_hex, canvas_id)` |
 
 ## Annotations
 
 | Resource | Method | Path | Key Parameters | Description | Python Method |
 |----------|--------|------|----------------|-------------|---------------|
-| Annotations | GET | `/canvases/:canvasId/widgets?annotations=1` | canvasId (path), annotations (query) | List widget annotations | - |
-| Annotations | GET | `/canvases/:canvasId/widgets?annotations=1&subscribe=1` | canvasId (path), annotations, subscribe (query) | Subscribe to annotation changes | - |
+| Annotations | GET | `/canvases/:canvasId/widgets?annotations=1` | canvasId (path), annotations (query) | List widget annotations | `list_widget_annotations(canvas_id)` |
+| Annotations | GET | `/canvases/:canvasId/widgets?annotations=1&subscribe=1` | canvasId (path), annotations, subscribe (query) | Subscribe to annotation changes | `subscribe_annotations(canvas_id, callback)` |
 
 ## Subscription Methods
 
