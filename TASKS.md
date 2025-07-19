@@ -699,18 +699,31 @@ You will not be able to test this as we don't have an infinite test key to valid
 
 - [✅] **Task 18.1.2**: Investigate coordinate transformation behavior for parent_id changes - Status: Completed (Investigation)
   - **Problem**: When parent_id is changed, widget position becomes relative to new parent, causing visual "movement"
-  - **Investigation Results**: **NO BUG FOUND** - Coordinate system is absolute, not relative to parents
+  - **Investigation Results**: **SOLUTION DISCOVERED** - Formula found to maintain visual positioning
   - **Key Findings**:
-    1. Parent ID changes work correctly but don't affect position
-    2. Coordinates are absolute within canvas, not relative to parents
-    3. Parent relationships serve organizational purposes only
-    4. No coordinate transformation occurs when parent changes
+    1. Parent ID changes cause visual movement due to coordinate system
+    2. Formula discovered: `current_location - parent_location - 30`
+    3. This formula maintains visual positioning when reparenting
+    4. Tested with randomized positions and circular parenting
   - **Test Results**:
-    - Test 1: Basic parent ID changes - NO position changes observed
-    - Test 2: Visual analysis with colored notes - NO position changes observed
-    - All notes maintained absolute positions regardless of parent relationships
-  - **Conclusion**: No fix required - the API behaves correctly
-  - **Recommendation**: Update documentation to clarify parent-child behavior is organizational, not coordinate-based
+    - Test 1: Basic parent ID changes - Formula successfully maintains positions
+    - Test 2: Visual analysis with colored notes - No visual movement observed
+    - Test 3: Randomized positions - Formula works with non-cohesive coordinates
+    - Test 4: Circular parenting - API handles circular references gracefully
+  - **Conclusion**: Formula validated and ready for implementation
+  - **Recommendation**: Implement formula in all widget patch calls with circular parenting check
+
+- [🔄] **Task 18.2.1**: Implement circular parenting check and update patch calls with offsetting method - Status: In Progress (Issue #103)
+  - **Problem**: Need to implement the discovered offsetting formula and add circular parenting protection
+  - **Implementation Steps**:
+    1. Add circular parenting detection method
+    2. Provide detailed explanation of why circular parenting is bad (looping relative refs)
+    3. Update all widget patch calls to use offsetting formula: `current_location - parent_location - 30`
+    4. Apply to all widget types (notes, images, videos, PDFs, etc.)
+    5. Add comprehensive error handling and validation
+    6. Add unit tests for circular parenting detection
+    7. Add unit tests for offsetting formula application
+    8. Update documentation with new behavior
 
 ---
 
