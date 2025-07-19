@@ -566,6 +566,37 @@ async def test_update_video_output(client: CanvusClient) -> None:
         print_error(f"Update video output operations error: {e}")
 
 
+async def test_license_info(client: CanvusClient) -> None:
+    """Test license info operations."""
+    print_header("Testing License Info Operations")
+
+    try:
+        # Get license information
+        license_info = await client.get_license_info()
+        print_success(f"Retrieved license info: {license_info.get('status', 'Unknown')}")
+
+        # Display key license details
+        if license_info:
+            print_success(f"License Key: {license_info.get('license_key', 'Not shown')}")
+            print_success(f"Status: {license_info.get('status', 'Unknown')}")
+            print_success(f"Expiry Date: {license_info.get('expiry_date', 'Not set')}")
+            
+            features = license_info.get('features', [])
+            if features:
+                print_success(f"Features: {', '.join(features)}")
+            
+            max_users = license_info.get('max_users')
+            if max_users:
+                print_success(f"Max Users: {max_users}")
+            
+            max_canvases = license_info.get('max_canvases')
+            if max_canvases:
+                print_success(f"Max Canvases: {max_canvases}")
+
+    except Exception as e:
+        print_error(f"License info operations error: {e}")
+
+
 async def test_server_functions(client: CanvusClient) -> None:
     """Main test function."""
     print_header("Starting Canvus Server Function Tests")
@@ -595,6 +626,7 @@ async def test_server_functions(client: CanvusClient) -> None:
             await test_client_video_outputs(test_client)
             await test_video_output_source_setting(test_client)
             await test_update_video_output(test_client)
+            await test_license_info(test_client)
             await test_folder_operations(test_client)
             await test_permission_management(test_client)
             await test_token_operations(test_client, user_id)
