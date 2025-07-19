@@ -213,6 +213,8 @@ class Widget(BaseWidget):
         strict: bool | None = None,
         from_attributes: bool | None = None,
         context: Any = None,
+        by_alias: bool | None = None,
+        by_name: bool | None = None,
     ) -> "Widget":
         """Custom validation to handle CanvasBackground."""
         if isinstance(obj, dict) and obj.get("widget_type") == "CanvasBackground":
@@ -328,3 +330,118 @@ class Workspace(BaseModel):
     view_rectangle: ViewRectangle
     workspace_name: str
     workspace_state: str  # "open" or "canvas_list"
+
+
+class Group(BaseModel):
+    """Group information for user management."""
+
+    id: str
+    name: str
+    description: Optional[str] = None
+    created_at: Optional[datetime] = None
+    modified_at: Optional[datetime] = None
+    member_count: Optional[int] = None
+
+
+class GroupMember(BaseModel):
+    """Group member information."""
+
+    id: str
+    name: str
+    email: str
+    admin: bool = False
+    approved: bool = True
+    blocked: bool = False
+    created_at: Optional[str] = None
+    last_login: Optional[str] = None
+    state: Optional[str] = None
+
+
+class VideoInput(BaseModel):
+    """Video input widget configuration."""
+
+    id: str
+    name: str
+    source: str
+    location: Dict[str, float]  # {"x": float, "y": float}
+    size: Dict[str, float]  # {"width": float, "height": float}
+    config: Dict[str, Any] = Field(default_factory=dict)
+    depth: int = 1
+    scale: float = 1.0
+    pinned: bool = False
+    created_at: Optional[datetime] = None
+    modified_at: Optional[datetime] = None
+
+
+class VideoOutput(BaseModel):
+    """Video output configuration."""
+
+    id: str
+    name: str
+    source: Optional[str] = None
+    enabled: bool = True
+    resolution: Optional[str] = None  # e.g., "1920x1080"
+    refresh_rate: Optional[int] = None  # e.g., 60
+    config: Dict[str, Any] = Field(default_factory=dict)
+    created_at: Optional[datetime] = None
+    modified_at: Optional[datetime] = None
+
+
+class LicenseInfo(BaseModel):
+    """License information from the server."""
+
+    license_key: Optional[str] = None
+    status: str  # "valid", "expired", "invalid", etc.
+    type: Optional[str] = None  # "lifetime", "trial", "subscription", etc.
+    edition: Optional[str] = None
+    expiry_date: Optional[str] = None
+    features: List[str] = Field(default_factory=list)
+    max_users: Optional[int] = None
+    max_canvases: Optional[int] = None
+    has_expired: bool = False
+    is_valid: bool = True
+    max_clients: Optional[int] = None
+
+
+class AuditLogEntry(BaseModel):
+    """Audit log entry for tracking system events."""
+
+    id: str
+    timestamp: datetime
+    user_id: Optional[str] = None
+    user_email: Optional[str] = None
+    action: str
+    resource_type: Optional[str] = None
+    resource_id: Optional[str] = None
+    details: Dict[str, Any] = Field(default_factory=dict)
+    ip_address: Optional[str] = None
+    user_agent: Optional[str] = None
+
+
+class MipmapInfo(BaseModel):
+    """Mipmap information for image assets."""
+
+    public_hash_hex: str
+    canvas_id: str
+    levels: List[int] = Field(default_factory=list)
+    format: Optional[str] = None
+    width: Optional[int] = None
+    height: Optional[int] = None
+    created_at: Optional[datetime] = None
+    modified_at: Optional[datetime] = None
+
+
+class Annotation(BaseModel):
+    """Widget annotation for collaborative features."""
+
+    id: str
+    widget_id: str
+    type: str  # "comment", "highlight", "drawing", etc.
+    content: str
+    author_id: Optional[str] = None
+    author_name: Optional[str] = None
+    created_at: Optional[datetime] = None
+    modified_at: Optional[datetime] = None
+    position: Optional[Dict[str, float]] = None  # {"x": float, "y": float}
+    color: Optional[str] = None
+    metadata: Dict[str, Any] = Field(default_factory=dict)
