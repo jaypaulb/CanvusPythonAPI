@@ -451,7 +451,7 @@ You will not be able to test this as we don't have an infinite test key to valid
     6. Add docstring following Google format
     7. Add unit test
 
-- [🔄] **Task 10.1.3**: Implement request offline activation method - Status: In Progress (Issue #78)
+- [✅] **Task 10.1.3**: Implement request offline activation method - Status: Completed (Issue #78)
 You will not be able to test this as we don't have an infinite test key to validate.  Skip testing for now on this sectoin.
 
   - **Endpoint**: `GET /license/request`
