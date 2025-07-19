@@ -315,6 +315,70 @@ class TestLicenseMethods:
             # Verify the _request method was called correctly
             mock_request.assert_called_once_with("GET", "audit-log", params=None)
 
+    @pytest.mark.asyncio
+    async def test_export_audit_log_csv_success(self, mock_client):
+        """Test successful audit log CSV export."""
+        # Mock response data (CSV bytes)
+        mock_response = b"id,author_id,target_type,target_id,action,created_at\n1,123,user,456,created,2024-01-01T12:00:00Z\n2,123,canvas,789,updated,2024-01-01T13:00:00Z"
+
+        # Mock the _request method
+        with patch.object(mock_client, '_request', new_callable=AsyncMock) as mock_request:
+            mock_request.return_value = mock_response
+
+            # Test the method without filters
+            result = await mock_client.export_audit_log_csv()
+
+            # Verify the result
+            assert result == mock_response
+            assert isinstance(result, bytes)
+            assert b"id,author_id,target_type" in result
+
+            # Verify the _request method was called correctly
+            mock_request.assert_called_once_with("GET", "audit-log/export-csv", params=None, return_binary=True)
+
+    @pytest.mark.asyncio
+    async def test_export_audit_log_csv_with_filters(self, mock_client):
+        """Test audit log CSV export with filters."""
+        # Mock response data (CSV bytes)
+        mock_response = b"id,author_id,target_type,target_id,action,created_at\n1,123,user,456,created,2024-01-01T12:00:00Z"
+
+        # Mock the _request method
+        with patch.object(mock_client, '_request', new_callable=AsyncMock) as mock_request:
+            mock_request.return_value = mock_response
+
+            # Test the method with filters
+            filters = {
+                "author_id": "123",
+                "created_after": "2024-01-01T00:00:00Z"
+            }
+            result = await mock_client.export_audit_log_csv(filters)
+
+            # Verify the result
+            assert result == mock_response
+            assert isinstance(result, bytes)
+            assert b"123" in result
+
+            # Verify the _request method was called correctly
+            mock_request.assert_called_once_with("GET", "audit-log/export-csv", params=filters, return_binary=True)
+
+    @pytest.mark.asyncio
+    async def test_export_audit_log_csv_error(self, mock_client):
+        """Test audit log CSV export with error."""
+        # Mock the _request method to raise an exception
+        with patch.object(mock_client, '_request', new_callable=AsyncMock) as mock_request:
+            mock_request.side_effect = CanvusAPIError("Export failed", status_code=500)
+
+            # Test the method should raise the exception
+            with pytest.raises(CanvusAPIError) as exc_info:
+                await mock_client.export_audit_log_csv()
+
+            # Verify the exception
+            assert str(exc_info.value) == "Export failed"
+            assert exc_info.value.status_code == 500
+
+            # Verify the _request method was called correctly
+            mock_request.assert_called_once_with("GET", "audit-log/export-csv", params=None, return_binary=True)
+
 
 if __name__ == "__main__":
     pytest.main([__file__, "-v"]) 

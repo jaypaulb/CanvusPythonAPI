@@ -1917,6 +1917,43 @@ class CanvusClient:
         """
         return await self._request("GET", "audit-log", params=filters)
 
+    async def export_audit_log_csv(self, filters: Optional[Dict[str, Any]] = None) -> bytes:
+        """Export audit log events as CSV with optional filtering.
+
+        Exports audit log events to CSV format. Accepts the same filters as the
+        get_audit_log method. The response is returned as binary data.
+
+        Args:
+            filters (Optional[Dict[str, Any]]): Optional filters to apply to the audit log:
+                - created_after (str): Include only events created after given timestamp
+                - created_before (str): Include only events created before given timestamp
+                - target_type (str): Include only events for the given target type
+                - target_id (str): Include only events for the given target ID
+                - author_id (str): Include only events for the given author ID
+
+        Returns:
+            bytes: CSV data as bytes containing the audit log export
+
+        Raises:
+            CanvusAPIError: If the request fails or CSV export cannot be generated
+            AuthenticationError: If authentication fails (requires admin privileges)
+
+        Example:
+            >>> # Export all audit events to CSV
+            >>> csv_data = await client.export_audit_log_csv()
+            >>> with open('audit_log.csv', 'wb') as f:
+            ...     f.write(csv_data)
+            
+            >>> # Export filtered events to CSV
+            >>> filtered_csv = await client.export_audit_log_csv({
+            ...     "author_id": "123",
+            ...     "created_after": "2024-01-01T00:00:00Z"
+            ... })
+            >>> with open('filtered_audit_log.csv', 'wb') as f:
+            ...     f.write(filtered_csv)
+        """
+        return await self._request("GET", "audit-log/export-csv", params=filters, return_binary=True)
+
     async def get_client_workspaces(self, client_id: str) -> List[Workspace]:
         """Get workspaces for a specific client."""
         return await self._request(
