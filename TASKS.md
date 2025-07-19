@@ -625,7 +625,7 @@ You will not be able to test this as we don't have an infinite test key to valid
 ## 16. Testing & Documentation
 
 ### 16.1 Comprehensive Testing
-- [🚫] **Task 16.1.1**: Create comprehensive test suite for all new methods - Status: Blocked (Library Issues)
+- [🔄] **Task 16.1.1**: Create comprehensive test suite for all new methods - Status: In Progress (Issue #98)
   - **Implementation Steps**:
     1. Add test files for each category of endpoints
     2. Test both success and error scenarios
