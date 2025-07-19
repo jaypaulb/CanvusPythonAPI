@@ -1747,6 +1747,30 @@ class CanvusClient:
         """
         return await self._request("GET", f"clients/{client_id}/video-outputs")
 
+    async def set_video_output_source(self, client_id: str, index: int, payload: Dict[str, Any]) -> Dict[str, Any]:
+        """Set the source for a specific video output on a client.
+
+        Args:
+            client_id (str): The ID of the client
+            index (int): The index of the video output to configure
+            payload (Dict[str, Any]): Video output source configuration including:
+                - source (str): Video source identifier
+                - enabled (bool, optional): Whether the output is enabled
+                - resolution (str, optional): Output resolution
+                - refresh_rate (int, optional): Refresh rate in Hz
+
+        Returns:
+            Dict[str, Any]: Updated video output data as dictionary
+
+        Raises:
+            CanvusAPIError: If the request fails, client not found, or invalid configuration
+        """
+        return await self._request(
+            "PATCH",
+            f"clients/{client_id}/video-outputs/{index}",
+            json_data=payload,
+        )
+
     async def get_client_workspaces(self, client_id: str) -> List[Workspace]:
         """Get workspaces for a specific client."""
         return await self._request(
