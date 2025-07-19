@@ -346,7 +346,7 @@ This document lists all remaining tasks to complete the Canvus Python API implem
     7. Add unit test
 
 ### 9.2 Video Outputs Management
-- [✅] **Task 9.2.1**: Implement list client video outputs method - Status: Completed (Issue #70)
+- [🔄] **Task 9.2.1**: Implement list client video outputs method - Status: In Progress (Issue #26)
   - **Endpoint**: `GET /clients/:client_id/video-outputs`
   - **Method**: `list_client_video_outputs(client_id: str) -> List[Dict[str, Any]]`
   - **Implementation Steps**:
@@ -357,8 +357,14 @@ This document lists all remaining tasks to complete the Canvus Python API implem
     5. Add proper error handling
     6. Add docstring following Google format
     7. Add unit test
+  - **Validation Required**:
+    1. Run quality checks (ruff, black, mypy, pytest)
+    2. Verify integration tests with test server
+    3. Add comprehensive error handling tests
+    4. Ensure test coverage >80%
+    5. Validate type hints and Pydantic models
 
-- [✅] **Task 9.2.2**: Implement set video output source method - Status: Completed (Issue #72)
+- [🔄] **Task 9.2.2**: Implement set video output source method - Status: In Progress (Issue #27)
   - **Endpoint**: `PATCH /clients/:client_id/video-outputs/:index`
   - **Method**: `set_video_output_source(client_id: str, index: int, payload: Dict[str, Any]) -> Dict[str, Any]`
   - **Implementation Steps**:
@@ -369,8 +375,14 @@ This document lists all remaining tasks to complete the Canvus Python API implem
     5. Add proper error handling and validation
     6. Add docstring following Google format
     7. Add unit test
+  - **Validation Required**:
+    1. Run quality checks (ruff, black, mypy, pytest)
+    2. Verify integration tests with test server
+    3. Add comprehensive error handling tests
+    4. Ensure test coverage >80%
+    5. Validate type hints and Pydantic models
 
-- [✅] **Task 9.2.3**: Implement update video output method - Status: Completed (Issue #74)
+- [🔄] **Task 9.2.3**: Implement update video output method - Status: In Progress (Issue #28)
   - **Endpoint**: `PATCH /canvases/:id/video-outputs/:output_id`
   - **Method**: `update_video_output(canvas_id: str, output_id: str, payload: Dict[str, Any]) -> Dict[str, Any]`
   - **Implementation Steps**:
@@ -381,13 +393,19 @@ This document lists all remaining tasks to complete the Canvus Python API implem
     5. Add proper error handling and validation
     6. Add docstring following Google format
     7. Add unit test
+  - **Validation Required**:
+    1. Run quality checks (ruff, black, mypy, pytest)
+    2. Verify integration tests with test server
+    3. Add comprehensive error handling tests
+    4. Ensure test coverage >80%
+    5. Validate type hints and Pydantic models
 
 ---
 
 ## 10. License Management - Missing Endpoints
 
 ### 10.1 License Operations
-- [✅] **Task 10.1.1**: Implement get license info method - Status: Completed (Issue #29)
+- [🔄] **Task 10.1.1**: Implement get license info method - Status: In Progress (Issue #29)
   - **Endpoint**: `GET /license`
   - **Method**: `get_license_info() -> Dict[str, Any]`
   - **Implementation Steps**:
@@ -397,6 +415,12 @@ This document lists all remaining tasks to complete the Canvus Python API implem
     4. Add proper error handling
     5. Add docstring following Google format
     6. Add unit test
+  - **Validation Required**:
+    1. Run quality checks (ruff, black, mypy, pytest)
+    2. Verify integration tests with test server
+    3. Add comprehensive error handling tests
+    4. Ensure test coverage >80%
+    5. Validate type hints and Pydantic models
 
 - [🔄] **Task 10.1.2**: Implement activate license method - Status: In Progress (Issue #30)
   - **Endpoint**: `POST /license/activate`
