@@ -669,6 +669,36 @@ You will not be able to test this as we don't have an infinite test key to valid
 
 ---
 
+## 18. Bug Fixes & Enhancements
+
+### 18.1 Parent ID Widget Position Bug Fix
+- [🔄] **Task 18.1.1**: Investigate and fix widget position bug when parent_id changes - Status: In Progress (Issue #99)
+  - **Problem**: When a widget's parent_id is updated, the widget "moves" because loc and scale are relative to the parent
+  - **Investigation Phase**:
+    1. Create test canvas with notes at specific known locations
+    2. Change parent_id of notes and record position changes
+    3. Create comprehensive data table of before/after positions
+    4. Analyze coordinate transformation patterns
+    5. Document exact behavior and coordinate system
+  - **Solution Design Phase**:
+    1. Analyze test data to understand coordinate transformations
+    2. Design algorithm to adjust widget properties for new parent
+    3. Create mathematical model for coordinate conversion
+    4. Design API wrapper to handle parent_id changes transparently
+  - **Implementation Phase**:
+    1. Create new folder for parent_id fix implementation
+    2. Implement coordinate transformation utilities
+    3. Add parent_id change wrapper methods
+    4. Add comprehensive tests for the fix
+    5. Document the solution and usage patterns
+  - **Testing Requirements**:
+    1. Test with various widget types (notes, images, etc.)
+    2. Test with nested parent hierarchies
+    3. Test edge cases (root canvas, single parent, etc.)
+    4. Verify no visual movement occurs after parent_id change
+
+---
+
 ## Implementation Guidelines
 
 ### For Junior Developers
