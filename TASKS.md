@@ -370,7 +370,7 @@ This document lists all remaining tasks to complete the Canvus Python API implem
     6. Add docstring following Google format
     7. Add unit test
 
-- [ ] **Task 9.2.3**: Implement update video output method
+- [🔄] **Task 9.2.3**: Implement update video output method - Status: In Progress (Issue #74)
   - **Endpoint**: `PATCH /canvases/:id/video-outputs/:output_id`
   - **Method**: `update_video_output(canvas_id: str, output_id: str, payload: Dict[str, Any]) -> Dict[str, Any]`
   - **Implementation Steps**:
