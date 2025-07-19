@@ -438,7 +438,7 @@ This document lists all remaining tasks to complete the Canvus Python API implem
     - ✅ Method works perfectly with real server
     - ✅ Returns actual license data: {'edition': '', 'has_expired': False, 'is_valid': True, 'max_clients': -1, 'type': 'lifetime'}
 
-- [🔄] **Task 10.1.2**: Implement activate license method - Status: In Progress (Issue #30)
+- [🚫] **Task 10.1.2**: Implement activate license method - Status: Blocked (Issue #30)
 You will not be able to test this as we don't have an infinite test key to validate.  Skip testing for now on this sectoin.
   - **Endpoint**: `POST /license/activate`
   - **Method**: `activate_license(key: str) -> Dict[str, Any]`
