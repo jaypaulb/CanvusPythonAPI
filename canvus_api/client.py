@@ -1848,6 +1848,35 @@ class CanvusClient:
         """
         return await self._request("GET", "license/request", params={"key": key})
 
+    async def install_offline_license(self, license_data: str) -> Dict[str, Any]:
+        """Install a license from offline activation data.
+
+        This method installs a license that was obtained through the offline
+        activation process. The license_data should be the response from the
+        offline activation server.
+
+        Args:
+            license_data (str): The license data obtained from offline activation
+
+        Returns:
+            Dict[str, Any]: Installation response data as dictionary including:
+                - status (str): Installation status (success, failed, etc.)
+                - message (str, optional): Additional information about the installation
+                - license_info (Dict[str, Any], optional): Updated license information
+
+        Raises:
+            CanvusAPIError: If the request fails, license data is invalid, or installation fails
+
+        Example:
+            >>> # First get offline activation request
+            >>> request_data = await client.request_offline_activation("AAAA-BBBB-CCCC-DDDD")
+            >>> # Then install the license (after processing with offline server)
+            >>> result = await client.install_offline_license("processed_license_data_here")
+            >>> print(result.get('status'))
+            success
+        """
+        return await self._request("POST", "license", json_data={"license": license_data})
+
     async def get_client_workspaces(self, client_id: str) -> List[Workspace]:
         """Get workspaces for a specific client."""
         return await self._request(
