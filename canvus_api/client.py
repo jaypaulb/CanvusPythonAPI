@@ -47,7 +47,7 @@ class CanvusClient:
 
     def __init__(self, base_url: str, api_key: str, verify_ssl: bool = True):
         """Initialize the client.
-        
+
         Args:
             base_url: The base URL of the Canvus server
             api_key: The API key for authentication
@@ -124,13 +124,14 @@ class CanvusClient:
 
         # Create SSL context based on verify_ssl setting
         import ssl
+
         connector = None
-        if url.startswith('https://') and not self.verify_ssl:
+        if url.startswith("https://") and not self.verify_ssl:
             ssl_context = ssl.create_default_context()
             ssl_context.check_hostname = False
             ssl_context.verify_mode = ssl.CERT_NONE
             connector = aiohttp.TCPConnector(ssl=ssl_context)
-        
+
         async with aiohttp.ClientSession(connector=connector) as session:
             async with session.request(method, url, **request_kwargs) as response:
                 status = response.status
@@ -742,7 +743,9 @@ class CanvusClient:
         """
         return await self._request("GET", f"canvases/{canvas_id}/video-inputs")
 
-    async def create_video_input(self, canvas_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+    async def create_video_input(
+        self, canvas_id: str, payload: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Create a new video input widget in a canvas.
 
         Args:
@@ -1747,7 +1750,9 @@ class CanvusClient:
         """
         return await self._request("GET", f"clients/{client_id}/video-outputs")
 
-    async def set_video_output_source(self, client_id: str, index: int, payload: Dict[str, Any]) -> Dict[str, Any]:
+    async def set_video_output_source(
+        self, client_id: str, index: int, payload: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Set the source for a specific video output on a client.
 
         Args:
@@ -1771,7 +1776,9 @@ class CanvusClient:
             json_data=payload,
         )
 
-    async def update_video_output(self, canvas_id: str, output_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+    async def update_video_output(
+        self, canvas_id: str, output_id: str, payload: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Update a video output on a canvas.
 
         Args:

@@ -361,7 +361,7 @@ async def test_video_input_operations(client: CanvusClient) -> None:
             "config": {"fps": 30, "resolution": "720p"},
             "depth": 1,
             "scale": 1.0,
-            "pinned": False
+            "pinned": False,
         }
 
         video_input = await client.create_video_input(canvas_id, video_input_payload)
@@ -384,7 +384,7 @@ async def test_video_input_operations(client: CanvusClient) -> None:
             if vi.get("id") == video_input_id:
                 found = True
                 break
-        
+
         if found:
             print_success("Verified video input appears in list")
         else:
@@ -397,7 +397,9 @@ async def test_video_input_operations(client: CanvusClient) -> None:
 
             # Verify deletion by listing again
             final_video_inputs = await client.list_canvas_video_inputs(canvas_id)
-            print_success(f"Found {len(final_video_inputs)} video inputs after deletion")
+            print_success(
+                f"Found {len(final_video_inputs)} video inputs after deletion"
+            )
 
             # Verify our deleted video input is not in the list
             still_found = False
@@ -405,7 +407,7 @@ async def test_video_input_operations(client: CanvusClient) -> None:
                 if vi.get("id") == video_input_id:
                     still_found = True
                     break
-            
+
             if not still_found:
                 print_success("Verified video input was deleted")
             else:
@@ -443,7 +445,9 @@ async def test_client_video_inputs(client: CanvusClient) -> None:
 
         # Display some details about the video inputs
         for i, vi in enumerate(video_inputs[:3]):  # Show first 3
-            print_success(f"Video input {i+1}: {vi.get('name', 'Unnamed')} (ID: {vi.get('id', 'Unknown')})")
+            print_success(
+                f"Video input {i+1}: {vi.get('name', 'Unnamed')} (ID: {vi.get('id', 'Unknown')})"
+            )
 
     except Exception as e:
         print_error(f"Client video inputs operations error: {e}")
@@ -470,7 +474,9 @@ async def test_client_video_outputs(client: CanvusClient) -> None:
 
         # Display some details about the video outputs
         for i, vo in enumerate(video_outputs[:3]):  # Show first 3
-            print_success(f"Video output {i+1}: {vo.get('name', 'Unnamed')} (ID: {vo.get('id', 'Unknown')})")
+            print_success(
+                f"Video output {i+1}: {vo.get('name', 'Unnamed')} (ID: {vo.get('id', 'Unknown')})"
+            )
 
     except Exception as e:
         print_error(f"Client video outputs operations error: {e}")
@@ -502,17 +508,23 @@ async def test_video_output_source_setting(client: CanvusClient) -> None:
                 "source": "test_source_1",
                 "enabled": True,
                 "resolution": "1920x1080",
-                "refresh_rate": 60
+                "refresh_rate": 60,
             }
 
-            updated_output = await client.set_video_output_source(client_id, output_index, source_payload)
-            print_success(f"Updated video output {output_index}: {updated_output.get('source', 'Unknown')}")
+            updated_output = await client.set_video_output_source(
+                client_id, output_index, source_payload
+            )
+            print_success(
+                f"Updated video output {output_index}: {updated_output.get('source', 'Unknown')}"
+            )
 
             # Verify the update
             if updated_output.get("source") == "test_source_1":
                 print_success("Video output source update verified")
             else:
-                print_warning(f"Source not updated as expected. Got: {updated_output.get('source')}")
+                print_warning(
+                    f"Source not updated as expected. Got: {updated_output.get('source')}"
+                )
 
         else:
             print_warning("No video outputs available for source setting test")
@@ -545,22 +557,30 @@ async def test_update_video_output(client: CanvusClient) -> None:
             "enabled": True,
             "resolution": "1920x1080",
             "refresh_rate": 60,
-            "source": "updated_test_source"
+            "source": "updated_test_source",
         }
 
         try:
-            updated_output = await client.update_video_output(canvas_id, output_id, update_payload)
-            print_success(f"Updated video output: {updated_output.get('name', 'Unknown')}")
+            updated_output = await client.update_video_output(
+                canvas_id, output_id, update_payload
+            )
+            print_success(
+                f"Updated video output: {updated_output.get('name', 'Unknown')}"
+            )
 
             # Verify the update
             if updated_output.get("name") == "Updated Test Output":
                 print_success("Video output update verified")
             else:
-                print_warning(f"Update not applied as expected. Got: {updated_output.get('name')}")
+                print_warning(
+                    f"Update not applied as expected. Got: {updated_output.get('name')}"
+                )
 
         except Exception as update_error:
             # This is expected if the test output doesn't exist
-            print_warning(f"Update test completed (expected if test output doesn't exist): {update_error}")
+            print_warning(
+                f"Update test completed (expected if test output doesn't exist): {update_error}"
+            )
 
     except Exception as e:
         print_error(f"Update video output operations error: {e}")
@@ -573,23 +593,27 @@ async def test_license_info(client: CanvusClient) -> None:
     try:
         # Get license information
         license_info = await client.get_license_info()
-        print_success(f"Retrieved license info: {license_info.get('status', 'Unknown')}")
+        print_success(
+            f"Retrieved license info: {license_info.get('status', 'Unknown')}"
+        )
 
         # Display key license details
         if license_info:
-            print_success(f"License Key: {license_info.get('license_key', 'Not shown')}")
+            print_success(
+                f"License Key: {license_info.get('license_key', 'Not shown')}"
+            )
             print_success(f"Status: {license_info.get('status', 'Unknown')}")
             print_success(f"Expiry Date: {license_info.get('expiry_date', 'Not set')}")
-            
-            features = license_info.get('features', [])
+
+            features = license_info.get("features", [])
             if features:
                 print_success(f"Features: {', '.join(features)}")
-            
-            max_users = license_info.get('max_users')
+
+            max_users = license_info.get("max_users")
             if max_users:
                 print_success(f"Max Users: {max_users}")
-            
-            max_canvases = license_info.get('max_canvases')
+
+            max_canvases = license_info.get("max_canvases")
             if max_canvases:
                 print_success(f"Max Canvases: {max_canvases}")
 
