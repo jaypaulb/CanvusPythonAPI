@@ -250,6 +250,8 @@ class TestClient:
 
     async def __aenter__(self):
         """Async context manager entry."""
+        # Initialize the client session
+        await self.client.__aenter__()
         await self.authenticate()
         await self.data_manager.setup_test_environment()
         return self
@@ -257,7 +259,8 @@ class TestClient:
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         """Async context manager exit."""
         await self.data_manager.cleanup_test_environment()
-        # Note: CanvusClient doesn't have a close method, so we skip it
+        # Close the client session
+        await self.client.__aexit__(exc_type, exc_val, exc_tb)
 
     async def authenticate(self, use_admin: bool = True) -> None:
         """Authenticate with the server."""

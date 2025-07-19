@@ -1998,6 +1998,87 @@ class CanvusClient:
         params = {"page": page} if page is not None else None
         return await self._request("GET", f"mipmaps/{public_hash_hex}", headers=headers, params=params)
 
+    async def get_mipmap_level_image(self, public_hash_hex: str, level: int, canvas_id: str, page: Optional[int] = None) -> bytes:
+        """Get a specific mipmap level image for a given asset hash.
+
+        Retrieves a specific mipmap level image in WebP format. This is useful for
+        efficient rendering at different zoom levels in WebGL applications.
+
+        Args:
+            public_hash_hex (str): The public hash hex of the asset
+            level (int): The mipmap level to retrieve (0 is original size)
+            canvas_id (str): Canvas ID for access control (passed as header)
+            page (Optional[int]): Page number for multi-page assets (first page is 0)
+
+        Returns:
+            bytes: WebP image data as bytes
+
+        Raises:
+            CanvusAPIError: If the request fails or mipmap level cannot be retrieved
+            AuthenticationError: If authentication fails
+            NotFoundError: If asset not found or user has no access
+
+        Example:
+            >>> # Get the original size image (level 0)
+            >>> original_image = await client.get_mipmap_level_image(
+            ...     "abcdef123456", 
+            ...     0, 
+            ...     "canvas-123"
+            ... )
+            >>> with open('original.webp', 'wb') as f:
+            ...     f.write(original_image)
+            
+            >>> # Get a smaller mipmap level for efficient rendering
+            >>> small_image = await client.get_mipmap_level_image(
+            ...     "abcdef123456", 
+            ...     2, 
+            ...     "canvas-123"
+            ... )
+            >>> print(f"Small image size: {len(small_image)} bytes")
+        """
+        headers = {"canvas-id": canvas_id}
+        params = {"page": page} if page is not None else None
+        return await self._request("GET", f"mipmaps/{public_hash_hex}/{level}", headers=headers, params=params, return_binary=True)
+
+    async def get_asset_file(self, public_hash_hex: str, canvas_id: str) -> bytes:
+        """Get the original asset file for a given asset hash.
+
+        Retrieves the original asset file (image, video, PDF, etc.) in its
+        original format. This is useful for downloading or processing the
+        original asset data.
+
+        Args:
+            public_hash_hex (str): The public hash hex of the asset
+            canvas_id (str): Canvas ID for access control (passed as header)
+
+        Returns:
+            bytes: Original asset file data as bytes
+
+        Raises:
+            CanvusAPIError: If the request fails or asset cannot be retrieved
+            AuthenticationError: If authentication fails
+            NotFoundError: If asset not found or user has no access
+
+        Example:
+            >>> # Get original image file
+            >>> image_data = await client.get_asset_file(
+            ...     "abcdef123456", 
+            ...     "canvas-123"
+            ... )
+            >>> with open('original_image.jpg', 'wb') as f:
+            ...     f.write(image_data)
+            
+            >>> # Get original video file
+            >>> video_data = await client.get_asset_file(
+            ...     "def789ghi", 
+            ...     "canvas-123"
+            ... )
+            >>> with open('original_video.mp4', 'wb') as f:
+            ...     f.write(video_data)
+        """
+        headers = {"canvas-id": canvas_id}
+        return await self._request("GET", f"assets/{public_hash_hex}", headers=headers, return_binary=True)
+
     async def get_client_workspaces(self, client_id: str) -> List[Workspace]:
         """Get workspaces for a specific client."""
         return await self._request(

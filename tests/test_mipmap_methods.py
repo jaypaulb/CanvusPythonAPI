@@ -103,6 +103,91 @@ class TestMipmapMethods:
                 params=None
             )
 
+    @pytest.mark.asyncio
+    async def test_get_mipmap_level_image_success(self, mock_client):
+        """Test successful mipmap level image retrieval."""
+        # Mock response data (binary image data)
+        mock_response = b"fake_mipmap_image_data"
+
+        # Mock the _request method
+        with patch.object(mock_client, '_request', new_callable=AsyncMock) as mock_request:
+            mock_request.return_value = mock_response
+
+            # Test parameters
+            test_hash = "abcdef123456"
+            test_level = 2
+            test_canvas_id = "canvas-123"
+
+            # Call the method
+            result = await mock_client.get_mipmap_level_image(test_hash, test_level, test_canvas_id)
+
+            # Verify the result
+            assert result == mock_response
+
+            # Verify the _request method was called correctly
+            mock_request.assert_called_once_with(
+                "GET", 
+                f"mipmaps/{test_hash}/{test_level}", 
+                headers={"canvas-id": test_canvas_id},
+                params=None,
+                return_binary=True
+            )
+
+    @pytest.mark.asyncio
+    async def test_get_asset_file_success(self, mock_client):
+        """Test successful asset file retrieval."""
+        # Mock response data (binary file data)
+        mock_response = b"fake_image_data_here"
+
+        # Mock the _request method
+        with patch.object(mock_client, '_request', new_callable=AsyncMock) as mock_request:
+            mock_request.return_value = mock_response
+
+            # Test parameters
+            test_hash = "abcdef123456"
+            test_canvas_id = "canvas-123"
+
+            # Call the method
+            result = await mock_client.get_asset_file(test_hash, test_canvas_id)
+
+            # Verify the result
+            assert result == mock_response
+
+            # Verify the _request method was called correctly
+            mock_request.assert_called_once_with(
+                "GET", 
+                f"assets/{test_hash}", 
+                headers={"canvas-id": test_canvas_id},
+                return_binary=True
+            )
+
+    @pytest.mark.asyncio
+    async def test_get_asset_file_error(self, mock_client):
+        """Test asset file retrieval error handling."""
+        # Mock the _request method to raise an error
+        with patch.object(mock_client, '_request', new_callable=AsyncMock) as mock_request:
+            mock_request.side_effect = CanvusAPIError("Asset not found", status_code=404)
+
+            # Test parameters
+            test_hash = "invalid_hash"
+            test_canvas_id = "canvas-123"
+
+            # Call the method and expect an error
+            with pytest.raises(CanvusAPIError) as exc_info:
+                await mock_client.get_asset_file(test_hash, test_canvas_id)
+
+            # Verify the error
+            assert "Asset not found" in str(exc_info.value)
+            assert exc_info.value.status_code == 404
+
+            # Verify the _request method was called correctly
+            mock_request.assert_called_once_with(
+                "GET", 
+                f"assets/{test_hash}", 
+                headers={"canvas-id": test_canvas_id},
+                return_binary=True
+            )
+
 
 if __name__ == "__main__":
     pytest.main([__file__, "-v"]) 
