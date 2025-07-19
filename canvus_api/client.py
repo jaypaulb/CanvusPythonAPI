@@ -1877,6 +1877,46 @@ class CanvusClient:
         """
         return await self._request("POST", "license", json_data={"license": license_data})
 
+    async def get_audit_log(self, filters: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+        """Get audit log events with optional filtering.
+
+        Retrieves a paginated list of audit events from the server. Events are sorted
+        from newest to oldest. The response includes a Link header for pagination.
+
+        Args:
+            filters (Optional[Dict[str, Any]]): Optional filters to apply to the audit log:
+                - created_after (str): Include only events created after given timestamp
+                - created_before (str): Include only events created before given timestamp
+                - target_type (str): Include only events for the given target type
+                - target_id (str): Include only events for the given target ID
+                - author_id (str): Include only events for the given author ID
+                - per_page (int): Number of results per page
+                - cursor (int): Current page offset (from Link header)
+
+        Returns:
+            Dict[str, Any]: Paginated audit log data as dictionary including:
+                - events (List[Dict[str, Any]]): List of audit events
+                - pagination (Dict[str, Any], optional): Pagination information
+                - total_count (int, optional): Total number of events matching filters
+
+        Raises:
+            CanvusAPIError: If the request fails or audit log cannot be retrieved
+            AuthenticationError: If authentication fails (requires admin privileges)
+
+        Example:
+            >>> # Get all audit events
+            >>> audit_log = await client.get_audit_log()
+            >>> print(f"Found {len(audit_log.get('events', []))} events")
+            
+            >>> # Get events for a specific user
+            >>> user_events = await client.get_audit_log({
+            ...     "author_id": "123",
+            ...     "created_after": "2024-01-01T00:00:00Z"
+            ... })
+            >>> print(f"User events: {len(user_events.get('events', []))}")
+        """
+        return await self._request("GET", "audit-log", params=filters)
+
     async def get_client_workspaces(self, client_id: str) -> List[Workspace]:
         """Get workspaces for a specific client."""
         return await self._request(
