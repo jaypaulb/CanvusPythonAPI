@@ -558,7 +558,7 @@ You will not be able to test this as we don't have an infinite test key to valid
 ## 13. Annotations - Missing Endpoints
 
 ### 13.1 Annotations Operations
-- [🔄] **Task 13.1.1**: Implement list widget annotations method - Status: In Progress (Issue #90)
+- [✅] **Task 13.1.1**: Implement list widget annotations method - Status: Completed (Issue #90)
   - **Endpoint**: `GET /canvases/:canvasId/widgets?annotations=1`
   - **Method**: `list_widget_annotations(canvas_id: str) -> List[Dict[str, Any]]`
   - **Implementation Steps**:
