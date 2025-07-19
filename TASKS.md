@@ -387,7 +387,7 @@ This document lists all remaining tasks to complete the Canvus Python API implem
 ## 10. License Management - Missing Endpoints
 
 ### 10.1 License Operations
-- [ ] **Task 10.1.1**: Implement get license info method
+- [🔄] **Task 10.1.1**: Implement get license info method - Status: In Progress (Issue #29)
   - **Endpoint**: `GET /license`
   - **Method**: `get_license_info() -> Dict[str, Any]`
   - **Implementation Steps**:
