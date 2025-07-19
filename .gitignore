@@ -61,4 +61,11 @@ cover/
 *.log
 *.local
 .DS_Store
-Thumbs.db 
+Thumbs.db
+
+# Development and IDE files
+LLM_DEV_GUIDE.md
+.cursor/
+.cursorrules
+TASKS.md
+notes.md 
