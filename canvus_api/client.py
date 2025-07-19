@@ -151,7 +151,7 @@ class CanvusClient:
                 text = await response.text()
                 if not text:
                     data = None
-                    print(f"Empty response body")
+                    print("Empty response body")
                 else:
                     try:
                         data = json.loads(text)
@@ -1822,6 +1822,31 @@ class CanvusClient:
             CanvusAPIError: If the request fails or license info cannot be retrieved
         """
         return await self._request("GET", "license")
+
+    async def request_offline_activation(self, key: str) -> Dict[str, Any]:
+        """Request offline activation for a license key.
+
+        This method generates an offline activation request that can be used to
+        activate a license without an internet connection.
+
+        Args:
+            key (str): The license key to generate an offline activation request for
+
+        Returns:
+            Dict[str, Any]: Offline activation request data as dictionary including:
+                - request_data (str): The offline activation request data
+                - expires_at (str, optional): When the request expires
+                - instructions (str, optional): Instructions for completing activation
+
+        Raises:
+            CanvusAPIError: If the request fails, key is invalid, or activation cannot be requested
+
+        Example:
+            >>> request_data = await client.request_offline_activation("AAAA-BBBB-CCCC-DDDD")
+            >>> print(request_data.get('request_data'))
+            eyJ0eXBlIjoib2ZmbGluZS1hY3RpdmF0aW9uLXJlcXVlc3QiLCJkYXRhIjoiLi4uIn0=
+        """
+        return await self._request("GET", "license/request", params={"key": key})
 
     async def get_client_workspaces(self, client_id: str) -> List[Workspace]:
         """Get workspaces for a specific client."""
