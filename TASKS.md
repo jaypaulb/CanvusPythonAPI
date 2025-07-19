@@ -358,7 +358,7 @@ This document lists all remaining tasks to complete the Canvus Python API implem
     6. Add docstring following Google format
     7. Add unit test
 
-- [ ] **Task 9.2.2**: Implement set video output source method
+- [🔄] **Task 9.2.2**: Implement set video output source method - Status: In Progress (Issue #72)
   - **Endpoint**: `PATCH /clients/:client_id/video-outputs/:index`
   - **Method**: `set_video_output_source(client_id: str, index: int, payload: Dict[str, Any]) -> Dict[str, Any]`
   - **Implementation Steps**:
