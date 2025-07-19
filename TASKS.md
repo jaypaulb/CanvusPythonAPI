@@ -604,7 +604,7 @@ You will not be able to test this as we don't have an infinite test key to valid
 ## 15. Model Enhancements
 
 ### 15.1 Missing Pydantic Models
-- [🔄] **Task 15.1.1**: Add missing model classes to `canvus_api/models.py` - Status: In Progress (Issue #41)
+- [✅] **Task 15.1.1**: Add missing model classes to `canvus_api/models.py` - Status: Completed (Issue #41)
   - **Models to add**:
     - `Group` - for group management
     - `VideoInput` - for video input widgets
