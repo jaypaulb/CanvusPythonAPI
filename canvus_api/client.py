@@ -1796,6 +1796,23 @@ class CanvusClient:
             json_data=payload,
         )
 
+    async def get_license_info(self) -> Dict[str, Any]:
+        """Get license information for the Canvus server.
+
+        Returns:
+            Dict[str, Any]: License information data as dictionary including:
+                - license_key (str): The license key
+                - status (str): License status (active, expired, etc.)
+                - expiry_date (str, optional): License expiry date
+                - features (List[str], optional): List of enabled features
+                - max_users (int, optional): Maximum number of users allowed
+                - max_canvases (int, optional): Maximum number of canvases allowed
+
+        Raises:
+            CanvusAPIError: If the request fails or license info cannot be retrieved
+        """
+        return await self._request("GET", "license")
+
     async def get_client_workspaces(self, client_id: str) -> List[Workspace]:
         """Get workspaces for a specific client."""
         return await self._request(
