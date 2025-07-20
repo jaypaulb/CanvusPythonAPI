@@ -41,3 +41,39 @@ class CanvasError(CanvusAPIError):
     """Raised when an operation on a canvas fails."""
 
     pass
+
+
+class RateLimitError(CanvusAPIError):
+    """Raised when rate limiting is exceeded."""
+
+    pass
+
+
+class ResourceNotFoundError(CanvusAPIError):
+    """Raised when a requested resource is not found."""
+
+    pass
+
+
+class ServerError(CanvusAPIError):
+    """Raised when the server returns a 5xx error."""
+
+    pass
+
+
+class TimeoutError(CanvusAPIError):
+    """Raised when a request times out."""
+
+    pass
+
+
+class RetryableError(CanvusAPIError):
+    """Base class for errors that can be retried."""
+
+    pass
+
+
+class TransientError(RetryableError):
+    """Raised for transient errors that can be retried."""
+
+    pass
