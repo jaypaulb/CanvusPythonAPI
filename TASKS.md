@@ -770,7 +770,7 @@ You will not be able to test this as we don't have an infinite test key to valid
     7. Update documentation with geometry examples
 
 ### 19.3 Cross-Canvas Widget Search
-- [ ] **Task 19.3.1**: Implement cross-canvas widget search functionality - Status: Not Started (Issue #105)
+- [🔄] **Task 19.3.1**: Implement cross-canvas widget search functionality - Status: In Progress (Issue #107)
   - **Features to implement**:
     - FindWidgetsAcrossCanvases() function
     - Support for complex queries with wildcards
