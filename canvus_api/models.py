@@ -446,3 +446,27 @@ class Annotation(BaseModel):
     position: Optional[Dict[str, float]] = None  # {"x": float, "y": float}
     color: Optional[str] = None
     metadata: Dict[str, Any] = Field(default_factory=dict)
+
+
+class WidgetZone(BaseModel):
+    """A spatial zone for grouping and organizing widgets.
+    
+    WidgetZones provide a way to define spatial regions in a canvas that can
+    be used for organizing widgets, applying operations to groups of widgets,
+    and creating spatial relationships between widgets.
+    """
+    
+    id: str
+    name: str
+    description: Optional[str] = None
+    location: Dict[str, float]  # {"x": float, "y": float}
+    size: Dict[str, float]  # {"width": float, "height": float}
+    color: Optional[str] = None  # Zone border color
+    background_color: Optional[str] = None  # Zone background color
+    opacity: float = 0.1  # Zone opacity (0.0 to 1.0)
+    visible: bool = True
+    locked: bool = False  # Whether widgets can be moved in/out of zone
+    tolerance: float = 5.0  # Spatial tolerance for zone operations
+    created_at: Optional[datetime] = None
+    modified_at: Optional[datetime] = None
+    metadata: Dict[str, Any] = Field(default_factory=dict)
