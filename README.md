@@ -7,10 +7,15 @@ A comprehensive Python client library for interacting with the Canvus API. This 
 ### ✅ Complete API Coverage
 - **All 100+ API endpoints** implemented and tested
 - **Type-safe operations** with Pydantic models
-- **Comprehensive error handling** with custom exceptions
+- **Comprehensive error handling** with custom exceptions and retry logic
 - **Async/await support** for all operations
 - **File upload/download** capabilities
 - **Real-time subscriptions** for live updates
+- **Advanced filtering system** with JSONPath and wildcard support
+- **Spatial operations** and geometry utilities
+- **Cross-canvas search** functionality
+- **Import/export system** with asset management
+- **Advanced widget operations** with spatial grouping and batch operations
 
 ### 🔐 Authentication & Security
 - **Token-based authentication** with automatic header management
@@ -47,6 +52,11 @@ canvus_api/
 ├── client.py            # Main CanvusClient class
 ├── models.py            # Pydantic models for all resources
 ├── exceptions.py        # Custom exception hierarchy
+├── filters.py           # Advanced filtering system
+├── geometry.py          # Spatial operations and utilities
+├── search.py            # Cross-canvas search functionality
+├── export.py            # Import/export system
+├── widget_operations.py # Advanced widget operations
 └── utils/               # Utility functions (if needed)
 ```
 
@@ -148,6 +158,19 @@ await client.update_note(canvas_id, note_id, payload)
 await client.delete_note(canvas_id, note_id)
 
 # Similar operations for images, browsers, videos, PDFs, connectors
+
+# Advanced widget operations
+from canvus_api.widget_operations import WidgetZoneManager, BatchWidgetOperations
+
+# Spatial grouping and zones
+zone_manager = WidgetZoneManager()
+zone = zone_manager.create_zone_from_widgets(widgets, "My Zone")
+widgets_in_zone = zone_manager.widgets_in_zone(all_widgets, zone)
+
+# Batch operations
+batch_ops = BatchWidgetOperations()
+move_operations = batch_ops.move_widgets(widgets, offset_x=50, offset_y=25)
+resize_operations = batch_ops.resize_widgets(widgets, scale_factor=1.5)
 ```
 
 ### User & Group Management
@@ -182,6 +205,22 @@ await client.upload_pdf(canvas_id, file_path)
 await client.get_asset_file(public_hash_hex, canvas_id)
 await client.get_mipmap_info(public_hash_hex, canvas_id)
 await client.get_mipmap_level_image(public_hash_hex, level, canvas_id)
+
+# Advanced filtering
+from canvus_api.filters import Filter
+
+# Filter widgets by properties
+filter_obj = Filter('{"widget_type": "Note", "location.x": {"$gt": 100}}')
+filtered_widgets = await client.list_widgets(canvas_id, filter=filter_obj)
+
+# Cross-canvas search
+from canvus_api.search import find_widgets_across_canvases
+results = await find_widgets_across_canvases(client, '{"text": "*test*"}')
+
+# Import/export
+from canvus_api.export import export_widgets_to_folder, import_widgets_from_folder
+await export_widgets_to_folder(client, canvas_id, "export_folder")
+await import_widgets_from_folder(client, canvas_id, "import_folder")
 ```
 
 ### Video Operations
@@ -344,7 +383,9 @@ CanvusAPIError                    # Base exception
 ├── ValidationError               # 422 validation errors
 ├── ResourceNotFoundError         # 404 not found errors
 ├── RateLimitError               # 429 rate limit errors
-└── ServerError                  # 5xx server errors
+├── TimeoutError                 # 408 timeout errors
+├── ServerError                  # 5xx server errors
+└── ConnectionError              # Network connection errors
 ```
 
 ### Error Handling Example
@@ -355,8 +396,80 @@ except ResourceNotFoundError as e:
     print(f"Canvas not found: {e}")
 except AuthenticationError as e:
     print(f"Authentication failed: {e}")
+except RateLimitError as e:
+    print(f"Rate limit exceeded: {e}")
+    # Client automatically retries with exponential backoff
+except TimeoutError as e:
+    print(f"Request timeout: {e}")
+    # Client automatically retries with exponential backoff
 except CanvusAPIError as e:
     print(f"API error: {e}")
+```
+
+## 🚀 Advanced Features
+
+### Advanced Filtering System
+```python
+from canvus_api.filters import Filter
+
+# JSONPath-like selectors
+filter_obj = Filter('{"location.x": {"$gt": 100}, "size.width": {"$lt": 300}}')
+
+# Wildcard matching
+filter_obj = Filter('{"text": "*important*", "widget_type": "Note"}')
+
+# Complex queries
+filter_obj = Filter('{"$and": [{"widget_type": "Note"}, {"location.x": {"$gt": 50}}]}')
+```
+
+### Spatial Operations
+```python
+from canvus_api.geometry import Rectangle, Point, widget_bounding_box, widgets_intersect
+
+# Create spatial objects
+rect = Rectangle(x=100, y=100, width=200, height=150)
+point = Point(x=150, y=125)
+
+# Widget spatial operations
+bbox = widget_bounding_box(widget)
+intersects = widgets_intersect(widget1, widget2)
+```
+
+### Cross-Canvas Search
+```python
+from canvus_api.search import find_widgets_across_canvases
+
+# Search across all canvases
+results = await find_widgets_across_canvases(client, '{"text": "*search term*"}')
+for result in results:
+    print(f"Found in canvas {result['canvas_id']}: {result['widget']}")
+```
+
+### Import/Export System
+```python
+from canvus_api.export import export_widgets_to_folder, import_widgets_from_folder
+
+# Export widgets with assets
+await export_widgets_to_folder(client, canvas_id, "export_folder")
+
+# Import widgets with spatial relationships preserved
+await import_widgets_from_folder(client, canvas_id, "import_folder")
+```
+
+### Advanced Widget Operations
+```python
+from canvus_api.widget_operations import WidgetZoneManager, BatchWidgetOperations, create_spatial_group
+
+# Create spatial zones
+zone_manager = WidgetZoneManager()
+zone = zone_manager.create_zone_from_widgets(widgets, "Group A")
+
+# Batch operations
+batch_ops = BatchWidgetOperations()
+operations = batch_ops.move_widgets(widgets, offset_x=50, offset_y=25)
+
+# Spatial grouping
+groups = create_spatial_group(widgets, tolerance=20.0)
 ```
 
 ## 📊 Performance
@@ -367,6 +480,8 @@ except CanvusAPIError as e:
 - **Streaming responses**: Handle large datasets efficiently
 - **Batch operations**: Reduce API calls
 - **Caching**: Optional response caching
+- **Retry logic**: Automatic retry with exponential backoff
+- **Spatial indexing**: Efficient spatial operations
 
 ### Best Practices
 - **Use async/await**: For all API operations

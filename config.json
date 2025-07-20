@@ -1,54 +1,32 @@
 {
   "server": {
-    "base_url": "https://canvusserver",
+    "base_url": "https://your-canvus-server.com",
     "api_version": "v1",
     "timeout": 30,
     "max_retries": 3,
-    "verify_ssl": false
+    "verify_ssl": true
   },
   "authentication": {
-    "admin_user": {
-      "email": "admin@test.local",
-      "password": "loBbR5rOur",
-      "token": null
-    },
-    "regular_user": {
-      "email": "user@test.local", 
-      "password": "3hzdRrLA68",
-      "token": null
-    },
-    "api_key": "wZ5ltFx8Rrs7BKS-UrjlpoHkFv1uIAx-uAjWtPsQ8e0"
+    "api_key": "your-api-key-here"
   },
   "test_data": {
     "test_canvas": {
-      "id": "556d6b64-7254-4bb1-a937-f6fe2bdc1afb",
-      "name": "Test Canvas - Auto Generated",
-      "description": "Canvas created by automated tests",
-      "folder_id": null
+      "name": "Test Canvas",
+      "description": "Canvas for testing"
     },
     "test_folder": {
-      "id": null,
-      "name": "Test Folder - Auto Generated",
-      "description": "Folder created by automated tests"
+      "name": "Test Folder",
+      "description": "Folder for testing"
     },
     "test_group": {
-      "id": null,
-      "name": "Test Group - Auto Generated",
-      "description": "Group created by automated tests"
+      "name": "Test Group",
+      "description": "Group for testing"
     },
     "test_user": {
-      "id": null,
-      "email": "testuser@test.local",
+      "email": "testuser@example.com",
       "name": "Test User",
-      "password": "pDR47PLNV+"
+      "password": "secure-password"
     }
-  },
-  "test_files": {
-    "image": "tests/test_files/test_image.jpg",
-    "video": "tests/test_files/test_video.mp4", 
-    "pdf": "tests/test_files/test_pdf.pdf",
-    "large_image": null,
-    "large_video": null
   },
   "test_settings": {
     "cleanup_after_tests": true,
@@ -78,7 +56,6 @@
   "logging": {
     "level": "INFO",
     "log_requests": true,
-    "log_responses": false,
-    "log_file": "tests/test.log"
+    "log_responses": false
   }
 } 

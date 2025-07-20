@@ -5,10 +5,10 @@ This module provides advanced search capabilities across multiple canvases,
 leveraging the geometry utilities for comprehensive widget discovery.
 """
 
-from typing import List, Dict, Any, Optional, Union, Tuple
+from typing import List, Dict, Any, Optional, Union
 from dataclasses import dataclass
 from .client import CanvusClient
-from .geometry import Point, Rectangle
+from .geometry import Rectangle
 from .models import BaseWidget, Widget, Note, Image, Browser, Video, PDF, Anchor, Connector
 
 

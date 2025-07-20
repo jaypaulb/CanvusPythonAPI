@@ -17,7 +17,8 @@ This document provides comprehensive examples for using the Canvus Python API cl
 - [Mipmaps & Assets](#mipmaps--assets)
 - [Annotations](#annotations)
 - [Error Handling](#error-handling)
-- [Advanced Patterns](#advanced-patterns)scal
+- [Advanced Features](#advanced-features)
+- [Advanced Patterns](#advanced-patterns)
 
 ## Installation
 
@@ -591,11 +592,228 @@ async def robust_api_calls(client):
             print("Permission denied")
         elif e.status_code == 429:
             print("Rate limit exceeded")
+        elif e.status_code == 408:
+            print("Request timeout")
         else:
             print(f"API error: {e.status_code} - {e}")
             
     except Exception as e:
         print(f"Unexpected error: {e}")
+```
+
+### Enhanced Error Handling with Retry Logic
+
+```python
+async def robust_api_with_retry(client):
+    """Example using enhanced error handling with automatic retry."""
+    try:
+        # Client automatically retries on transient failures
+        result = await client.get_canvas("canvas-id")
+        
+    except RateLimitError as e:
+        print(f"Rate limit exceeded: {e}")
+        # Client automatically retries with exponential backoff
+        
+    except TimeoutError as e:
+        print(f"Request timeout: {e}")
+        # Client automatically retries with exponential backoff
+        
+    except ServerError as e:
+        print(f"Server error: {e}")
+        # Client automatically retries on 5xx errors
+```
+
+## Advanced Features
+
+### Advanced Filtering
+
+```python
+async def advanced_filtering(client, canvas_id):
+    """Use advanced filtering system."""
+    from canvus_api.filters import Filter
+    
+    try:
+        # Filter notes with specific text
+        text_filter = Filter('{"widget_type": "Note", "text": "*important*"}')
+        important_notes = await client.list_widgets(canvas_id, filter=text_filter)
+        print(f"Found {len(important_notes)} important notes")
+        
+        # Filter by location
+        location_filter = Filter('{"location.x": {"$gt": 100}, "location.y": {"$lt": 300}}')
+        positioned_widgets = await client.list_widgets(canvas_id, filter=location_filter)
+        print(f"Found {len(positioned_widgets)} widgets in position range")
+        
+        # Complex filter with multiple conditions
+        complex_filter = Filter('''{
+            "$and": [
+                {"widget_type": "Note"},
+                {"size.width": {"$gt": 150}},
+                {"text": {"$regex": ".*test.*"}}
+            ]
+        }''')
+        filtered_widgets = await client.list_widgets(canvas_id, filter=complex_filter)
+        print(f"Found {len(filtered_widgets)} matching widgets")
+        
+    except CanvusAPIError as e:
+        print(f"Error: {e}")
+```
+
+### Spatial Operations
+
+```python
+async def spatial_operations(client, canvas_id):
+    """Use spatial operations and geometry utilities."""
+    from canvus_api.geometry import Rectangle, Point, widget_bounding_box, widgets_intersect
+    
+    try:
+        # Get all widgets
+        widgets = await client.list_widgets(canvas_id)
+        
+        # Create a search area
+        search_area = Rectangle(x=100, y=100, width=400, height=300)
+        
+        # Find widgets in the search area
+        widgets_in_area = []
+        for widget in widgets:
+            try:
+                bbox = widget_bounding_box(widget)
+                if bbox.x >= search_area.x and bbox.y >= search_area.y and \
+                   bbox.x + bbox.width <= search_area.x + search_area.width and \
+                   bbox.y + bbox.height <= search_area.y + search_area.height:
+                    widgets_in_area.append(widget)
+            except (ValueError, AttributeError):
+                continue
+        
+        print(f"Found {len(widgets_in_area)} widgets in search area")
+        
+        # Check for intersecting widgets
+        for i, widget1 in enumerate(widgets):
+            for j, widget2 in enumerate(widgets[i+1:], i+1):
+                try:
+                    if widgets_intersect(widget1, widget2):
+                        print(f"Widgets {widget1.id} and {widget2.id} intersect")
+                except (ValueError, AttributeError):
+                    continue
+                    
+    except CanvusAPIError as e:
+        print(f"Error: {e}")
+```
+
+### Cross-Canvas Search
+
+```python
+async def cross_canvas_search(client):
+    """Search for widgets across all canvases."""
+    from canvus_api.search import find_widgets_across_canvases
+    
+    try:
+        # Search for notes containing "important"
+        results = await find_widgets_across_canvases(client, '{"text": "*important*"}')
+        
+        print(f"Found {len(results)} widgets across all canvases:")
+        for result in results:
+            canvas_id = result['canvas_id']
+            widget = result['widget']
+            print(f"  Canvas {canvas_id}: {widget.widget_type} - {widget.id}")
+            
+        # Search for large images
+        large_images = await find_widgets_across_canvases(client, 
+            '{"widget_type": "Image", "size.width": {"$gt": 300}}')
+        
+        print(f"Found {len(large_images)} large images")
+        
+    except CanvusAPIError as e:
+        print(f"Error: {e}")
+```
+
+### Import/Export System
+
+```python
+async def import_export_example(client, canvas_id):
+    """Export and import widgets with assets."""
+    from canvus_api.export import export_widgets_to_folder, import_widgets_from_folder
+    
+    try:
+        # Export widgets to folder
+        export_path = "exported_widgets"
+        await export_widgets_to_folder(client, canvas_id, export_path)
+        print(f"Exported widgets to {export_path}")
+        
+        # Create a new canvas for import
+        new_canvas = await client.create_canvas({
+            "name": "Imported Canvas",
+            "description": "Canvas with imported widgets"
+        })
+        
+        # Import widgets to new canvas
+        await import_widgets_from_folder(client, new_canvas.id, export_path)
+        print(f"Imported widgets to canvas {new_canvas.id}")
+        
+        # Verify import
+        imported_widgets = await client.list_widgets(new_canvas.id)
+        print(f"Imported {len(imported_widgets)} widgets")
+        
+    except CanvusAPIError as e:
+        print(f"Error: {e}")
+```
+
+### Advanced Widget Operations
+
+```python
+async def advanced_widget_operations(client, canvas_id):
+    """Use advanced widget operations and spatial grouping."""
+    from canvus_api.widget_operations import (
+        WidgetZoneManager, BatchWidgetOperations, 
+        create_spatial_group, find_widget_clusters
+    )
+    
+    try:
+        # Get all widgets
+        widgets = await client.list_widgets(canvas_id)
+        
+        # Create spatial zones
+        zone_manager = WidgetZoneManager()
+        
+        # Group widgets by spatial proximity
+        spatial_groups = create_spatial_group(widgets, tolerance=50.0)
+        print(f"Created {len(spatial_groups)} spatial groups")
+        
+        # Find clusters of widgets
+        clusters = find_widget_clusters(widgets, min_cluster_size=3, tolerance=100.0)
+        print(f"Found {len(clusters)} widget clusters")
+        
+        # Create zones for each cluster
+        zones = []
+        for i, cluster in enumerate(clusters):
+            zone = zone_manager.create_zone_from_widgets(
+                cluster, 
+                f"Zone {i+1}", 
+                f"Zone containing {len(cluster)} widgets"
+            )
+            zones.append(zone)
+            print(f"Created zone: {zone.name}")
+        
+        # Perform batch operations
+        batch_ops = BatchWidgetOperations()
+        
+        # Move all notes by 50 pixels to the right
+        notes = [w for w in widgets if w.widget_type == "Note"]
+        move_operations = batch_ops.move_widgets(notes, offset_x=50, offset_y=0)
+        print(f"Generated {len(move_operations)} move operations")
+        
+        # Resize all images by 1.2x
+        images = [w for w in widgets if w.widget_type == "Image"]
+        resize_operations = batch_ops.resize_widgets(images, scale_factor=1.2)
+        print(f"Generated {len(resize_operations)} resize operations")
+        
+        # Find widgets that contain a specific widget
+        if widgets:
+            target_widget = widgets[0]
+            containers = batch_ops.widgets_contain_id(widgets, target_widget.id)
+            print(f"Found {len(containers)} widgets containing {target_widget.id}")
+            
+    except CanvusAPIError as e:
+        print(f"Error: {e}")
 ```
 
 ## Advanced Patterns

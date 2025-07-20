@@ -5,7 +5,6 @@ Example script demonstrating the export functionality.
 This script shows how to export widgets from a canvas and import them to another canvas.
 """
 
-import asyncio
 import tempfile
 from pathlib import Path
 
@@ -80,7 +79,7 @@ async def export_import_example():
                 )
                 
                 print(f"✅ Imported {import_result['imported_count']} widgets")
-                print(f"📊 Import summary:")
+                print("📊 Import summary:")
                 print(f"   - Target canvas: {import_result['target_canvas']}")
                 print(f"   - Widgets imported: {len(import_result['widgets'])}")
                 print(f"   - ID mappings: {len(import_result['id_mapping'])}")
