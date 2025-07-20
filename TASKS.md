@@ -733,6 +733,105 @@ You will not be able to test this as we don't have an infinite test key to valid
 
 ---
 
+## 19. SDK Enhancement - Go SDK Advanced Features
+
+### 19.1 Client-Side Filtering System
+- [ ] **Task 19.1.1**: Implement advanced filtering system from Go SDK - Status: Not Started (Issue #105)
+  - **Features to implement**:
+    - Generic Filter class with arbitrary JSON criteria support
+    - Wildcard matching (*) for any value
+    - Prefix/suffix wildcards (abc*, *123, *mid*)
+    - JSONPath-like selectors ($.location.x, $.size.width)
+    - Client-side filtering for all list endpoints
+  - **Implementation Steps**:
+    1. Create `canvus_api/filters.py` module
+    2. Implement Filter class with Match() method
+    3. Add JSONPath parsing utilities
+    4. Add wildcard matching logic
+    5. Integrate with existing list methods (list_canvases, list_widgets, etc.)
+    6. Add comprehensive unit tests
+    7. Update documentation with filtering examples
+
+### 19.2 Geometry Utilities
+- [ ] **Task 19.2.1**: Implement spatial operations and geometry utilities - Status: Not Started (Issue #105)
+  - **Features to implement**:
+    - Rectangle, Point, Size classes for spatial operations
+    - Contains() function for spatial containment
+    - Touches() function for overlap detection
+    - WidgetBoundingBox() for widget spatial bounds
+    - WidgetContains() and WidgetsTouch() for widget operations
+  - **Implementation Steps**:
+    1. Create `canvus_api/geometry.py` module
+    2. Implement spatial data classes (Rectangle, Point, Size)
+    3. Add spatial operation functions
+    4. Add widget-specific geometry utilities
+    5. Integrate with existing widget models
+    6. Add comprehensive unit tests
+    7. Update documentation with geometry examples
+
+### 19.3 Cross-Canvas Widget Search
+- [ ] **Task 19.3.1**: Implement cross-canvas widget search functionality - Status: Not Started (Issue #105)
+  - **Features to implement**:
+    - FindWidgetsAcrossCanvases() function
+    - Support for complex queries with wildcards
+    - Return full drill-down path (server, canvas_id, widget_id)
+    - Support for arbitrary JSON queries
+  - **Implementation Steps**:
+    1. Create `canvus_api/search.py` module
+    2. Implement cross-canvas search logic
+    3. Add query parsing and matching
+    4. Integrate with existing canvas and widget methods
+    5. Add comprehensive unit tests
+    6. Update documentation with search examples
+
+### 19.4 Import/Export System
+- [ ] **Task 19.4.1**: Implement robust import/export functionality - Status: Not Started (Issue #105)
+  - **Features to implement**:
+    - ExportWidgetsToFolder() with asset file handling
+    - ImportWidgetsFromFolder() with spatial relationships
+    - Round-trip-safe export/import
+    - Asset file management (images, PDFs, videos)
+  - **Implementation Steps**:
+    1. Create `canvus_api/export.py` module
+    2. Implement export functionality with asset handling
+    3. Implement import functionality with relationship restoration
+    4. Add file system operations for assets
+    5. Add comprehensive unit tests
+    6. Update documentation with import/export examples
+
+### 19.5 Enhanced Error Handling
+- [ ] **Task 19.5.1**: Improve error handling and add retry logic - Status: Not Started (Issue #105)
+  - **Features to implement**:
+    - Response validation against request payload
+    - Retry logic for transient failures (5xx errors)
+    - More specific exception types
+    - Exponential backoff for retries
+  - **Implementation Steps**:
+    1. Enhance existing error handling in client.py
+    2. Add response validation logic
+    3. Implement retry mechanism with exponential backoff
+    4. Add more specific exception types
+    5. Update existing methods to use enhanced error handling
+    6. Add comprehensive unit tests
+    7. Update documentation with error handling patterns
+
+### 19.6 Advanced Widget Operations
+- [ ] **Task 19.6.1**: Implement advanced widget operations - Status: Not Started (Issue #105)
+  - **Features to implement**:
+    - WidgetZone concept for spatial grouping
+    - WidgetsContainId() and WidgetsTouchId() functions
+    - Batch operations for multiple widgets
+    - Spatial tolerance configuration
+  - **Implementation Steps**:
+    1. Add WidgetZone data class to models.py
+    2. Implement spatial grouping functions
+    3. Add batch operation utilities
+    4. Integrate with existing widget methods
+    5. Add comprehensive unit tests
+    6. Update documentation with advanced widget examples
+
+---
+
 ## Implementation Guidelines
 
 ### For Junior Developers
