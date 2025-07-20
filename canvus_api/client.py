@@ -37,6 +37,7 @@ from .models import (
     Workspace,
 )
 from .exceptions import CanvusAPIError
+from .filters import Filter, filter_list
 
 T = TypeVar("T", bound=BaseModel)
 JsonData = Union[Dict[str, Any], str]
@@ -397,14 +398,43 @@ class CanvusClient:
         return await self._request("POST", "server-config/send-test-email")
 
     # Canvas Operations
-    async def list_canvases(self, params: Optional[JsonData] = None) -> List[Canvas]:
-        """List all available canvases."""
-        return await self._request(
+    async def list_canvases(self, params: Optional[JsonData] = None, filter_obj: Optional[Filter] = None) -> List[Canvas]:
+        """List all available canvases with optional client-side filtering.
+        
+        Args:
+            params: Optional server-side parameters
+            filter_obj: Optional client-side filter to apply to results
+            
+        Returns:
+            List of canvases, optionally filtered
+            
+        Example:
+            >>> filter_obj = Filter({"name": "My Canvas", "mode": "normal"})
+            >>> canvases = await client.list_canvases(filter=filter_obj)
+        """
+        canvases = await self._request(
             "GET",
             "canvases",
             response_model=Canvas,
             params=self._parse_payload(params) if params else None,
         )
+        
+        if filter_obj:
+            # Convert canvases to dict format for filtering
+            canvas_dicts = [canvas.as_map() for canvas in canvases]
+            filtered_dicts = filter_list(canvas_dicts, filter_obj)
+            
+            # Convert back to Canvas objects
+            filtered_canvases = []
+            for canvas_dict in filtered_dicts:
+                # Find the original canvas object
+                canvas = next((c for c in canvases if c.id == canvas_dict["id"]), None)
+                if canvas:
+                    filtered_canvases.append(canvas)
+            
+            return filtered_canvases
+        
+        return canvases
 
     async def get_canvas(self, canvas_id: str) -> Canvas:
         """Get details of a specific canvas."""
@@ -1182,11 +1212,40 @@ class CanvusClient:
         )
 
     # Widget Operations (Read-only)
-    async def list_widgets(self, canvas_id: str) -> List[Widget]:
-        """List all widgets in a canvas."""
-        return await self._request(
+    async def list_widgets(self, canvas_id: str, filter_obj: Optional[Filter] = None) -> List[Widget]:
+        """List all widgets in a canvas with optional client-side filtering.
+        
+        Args:
+            canvas_id: The ID of the canvas
+            filter_obj: Optional client-side filter to apply to results
+            
+        Returns:
+            List of widgets, optionally filtered
+            
+        Example:
+            >>> filter_obj = Filter({"widget_type": "Note", "$.location.x": 100.0})
+            >>> widgets = await client.list_widgets(canvas_id, filter=filter_obj)
+        """
+        widgets = await self._request(
             "GET", f"canvases/{canvas_id}/widgets", response_model=Widget
         )
+        
+        if filter_obj:
+            # Convert widgets to dict format for filtering
+            widget_dicts = [widget.as_map() for widget in widgets]
+            filtered_dicts = filter_list(widget_dicts, filter_obj)
+            
+            # Convert back to Widget objects
+            filtered_widgets = []
+            for widget_dict in filtered_dicts:
+                # Find the original widget object
+                widget = next((w for w in widgets if w.id == widget_dict["id"]), None)
+                if widget:
+                    filtered_widgets.append(widget)
+            
+            return filtered_widgets
+        
+        return widgets
 
     async def get_widget(self, canvas_id: str, widget_id: str) -> Widget:
         """Get details of a specific widget."""

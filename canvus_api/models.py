@@ -96,6 +96,29 @@ class Canvas(BaseModel):
     created_at: Optional[datetime] = None
     modified_at: Optional[datetime] = None
 
+    def as_map(self) -> Dict[str, Any]:
+        """Convert canvas to dictionary for filtering.
+        
+        Returns:
+            Dictionary representation suitable for filtering
+        """
+        return {
+            "id": self.id,
+            "name": self.name,
+            "access": self.access,
+            "asset_size": self.asset_size,
+            "folder_id": self.folder_id,
+            "in_trash": self.in_trash,
+            "mode": self.mode,
+            "preview_hash": self.preview_hash,
+            "state": self.state,
+            "description": self.description,
+            "link_permission": self.link_permission,
+            "owner_id": self.owner_id,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "modified_at": self.modified_at.isoformat() if self.modified_at else None,
+        }
+
 
 class CanvasFolder(BaseModel):
     """Canvas folder object."""
@@ -127,6 +150,32 @@ class BaseWidget(BaseModel):
     parent_id: Optional[str] = None
     created_at: Optional[datetime] = None
     modified_at: Optional[datetime] = None
+
+    def as_map(self) -> Dict[str, Any]:
+        """Convert widget to dictionary for filtering.
+        
+        Returns:
+            Dictionary representation suitable for filtering
+        """
+        result = {
+            "id": self.id,
+            "widget_type": self.widget_type,
+            "parent_id": self.parent_id,
+            "pinned": self.pinned,
+            "scale": self.scale,
+            "state": self.state,
+            "depth": self.depth,
+        }
+        
+        # Add location if present
+        if self.location:
+            result["location"] = self.location
+        
+        # Add size if present
+        if self.size:
+            result["size"] = self.size
+        
+        return result
 
 
 class Note(BaseWidget):
