@@ -5,7 +5,6 @@ Integration tests for the export functionality.
 
 import pytest
 import tempfile
-import shutil
 from pathlib import Path
 from datetime import datetime
 
@@ -13,8 +12,6 @@ from tests.test_config import TestClient, TestConfig
 from canvus_api.export import (
     ExportConfig,
     ImportConfig,
-    WidgetExporter,
-    WidgetImporter,
     export_widgets_to_folder,
     import_widgets_from_folder
 )

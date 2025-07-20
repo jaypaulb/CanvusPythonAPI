@@ -6,9 +6,8 @@ Unit tests for the export functionality.
 import pytest
 import json
 import tempfile
-import shutil
 from pathlib import Path
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock
 from datetime import datetime
 
 from canvus_api.export import (
@@ -20,7 +19,7 @@ from canvus_api.export import (
     import_widgets_from_folder
 )
 from canvus_api.client import CanvusClient
-from canvus_api.models import Widget, Note, Image, Video, PDF, Canvas
+from canvus_api.models import Canvas
 from canvus_api.exceptions import CanvusAPIError
 
 
@@ -394,7 +393,7 @@ class TestWidgetImporter:
         importer = WidgetImporter(mock_client, config)
         
         # Import widgets
-        result = await importer.import_widgets_from_folder(
+        await importer.import_widgets_from_folder(
             folder_path=str(test_export_folder)
         )
         

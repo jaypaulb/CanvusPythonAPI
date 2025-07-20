@@ -3,13 +3,13 @@ Unit tests for cross-canvas search functionality.
 """
 
 import pytest
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, patch
 from canvus_api.search import (
     SearchResult, CrossCanvasSearch, find_widgets_across_canvases,
     find_widgets_by_text, find_widgets_by_type, find_widgets_in_area
 )
-from canvus_api.geometry import Point, Size, Rectangle
-from canvus_api.models import Widget, Note, Image, Canvas
+from canvus_api.geometry import Rectangle
+from canvus_api.models import Widget, Canvas
 
 
 class TestSearchResult:

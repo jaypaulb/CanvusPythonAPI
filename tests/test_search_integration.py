@@ -6,10 +6,10 @@ import pytest
 import asyncio
 from tests.test_config import TestClient
 from canvus_api.search import (
-    SearchResult, CrossCanvasSearch, find_widgets_across_canvases,
+    SearchResult, CrossCanvasSearch,
     find_widgets_by_text, find_widgets_by_type, find_widgets_in_area
 )
-from canvus_api.geometry import Point, Size, Rectangle
+from canvus_api.geometry import Rectangle
 
 
 class TestSearchIntegration:
