@@ -11,7 +11,7 @@ requires-python = ">=3.8"
 license = "MIT"
 keywords = ["canvus", "api", "client", "canvas", "collaboration"]
 authors = [
-    { name = "Canvus Python API Team", email = "support@canvus.com" }
+    { name = "Effective Tech Solutions Kft", email = "support@effectivetechsolutions.com" }
 ]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
