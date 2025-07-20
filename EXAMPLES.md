@@ -17,7 +17,7 @@ This document provides comprehensive examples for using the Canvus Python API cl
 - [Mipmaps & Assets](#mipmaps--assets)
 - [Annotations](#annotations)
 - [Error Handling](#error-handling)
-- [Advanced Patterns](#advanced-patterns)
+- [Advanced Patterns](#advanced-patterns)scal
 
 ## Installation
 
