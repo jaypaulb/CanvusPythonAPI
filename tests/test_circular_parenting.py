@@ -1,10 +1,10 @@
 """Test circular parenting check and position offsetting functionality."""
 
 import pytest
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock
 from canvus_api.client import CanvusClient
 from canvus_api.exceptions import CanvusAPIError
-from canvus_api.models import Widget, Note, Image
+from canvus_api.models import Widget
 
 pytestmark = pytest.mark.asyncio
 

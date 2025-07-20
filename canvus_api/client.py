@@ -666,7 +666,7 @@ class CanvusClient:
                         # Update the payload with the calculated offset
                         payload_dict["location"] = offset
 
-                except Exception as e:
+                except Exception:
                     # If we can't get widget info, proceed without offsetting
                     # This maintains backward compatibility
                     pass
@@ -722,7 +722,7 @@ class CanvusClient:
                         # Update the payload with the calculated offset
                         payload["location"] = offset
 
-                except Exception as e:
+                except Exception:
                     # If we can't get widget info, proceed without offsetting
                     # This maintains backward compatibility
                     pass
@@ -810,7 +810,7 @@ class CanvusClient:
                         # Update the payload with the calculated offset
                         payload_dict["location"] = offset
 
-                except Exception as e:
+                except Exception:
                     # If we can't get widget info, proceed without offsetting
                     # This maintains backward compatibility
                     pass
@@ -868,7 +868,7 @@ class CanvusClient:
                         # Update the payload with the calculated offset
                         payload["location"] = offset
 
-                except Exception as e:
+                except Exception:
                     # If we can't get widget info, proceed without offsetting
                     # This maintains backward compatibility
                     pass
@@ -956,7 +956,7 @@ class CanvusClient:
                         # Update the payload with the calculated offset
                         payload_dict["location"] = offset
 
-                except Exception as e:
+                except Exception:
                     # If we can't get widget info, proceed without offsetting
                     # This maintains backward compatibility
                     pass
@@ -1100,7 +1100,7 @@ class CanvusClient:
                         # Update the payload with the calculated offset
                         payload_dict["location"] = offset
 
-                except Exception as e:
+                except Exception:
                     # If we can't get widget info, proceed without offsetting
                     # This maintains backward compatibility
                     pass
@@ -1268,7 +1268,7 @@ class CanvusClient:
                         # Update the payload with the calculated offset
                         payload["location"] = offset
 
-                except Exception as e:
+                except Exception:
                     # If we can't get widget info, proceed without offsetting
                     # This maintains backward compatibility
                     pass
