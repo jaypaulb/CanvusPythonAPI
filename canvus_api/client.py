@@ -78,6 +78,89 @@ class CanvusClient:
                 raise CanvusAPIError("Invalid JSON string") from e
         return data
 
+    async def _check_circular_parenting(
+        self, canvas_id: str, widget_id: str, new_parent_id: str
+    ) -> None:
+        """Check for circular parenting and raise an error if detected.
+
+        Circular parenting occurs when setting a widget's parent would create a loop
+        in the parent-child hierarchy (e.g., A -> B -> C -> A). This is problematic
+        because:
+        1. The system cannot resolve relative coordinate references in a loop
+        2. It would cause infinite recursion when calculating widget positions
+        3. Rendering engines cannot handle circular widget hierarchies
+        4. It breaks the fundamental tree structure of the canvas
+
+        Args:
+            canvas_id (str): The ID of the canvas
+            widget_id (str): The ID of the widget being reparented
+            new_parent_id (str): The ID of the proposed new parent
+
+        Raises:
+            CanvusAPIError: If circular parenting would be created
+        """
+        if widget_id == new_parent_id:
+            raise CanvusAPIError(
+                f"Cannot set widget {widget_id} as its own parent. "
+                "This would create a circular reference that the system cannot handle "
+                "due to infinite loops in relative coordinate calculations."
+            )
+
+                # Check if the widget being reparented is already a descendant of the new parent
+        # This would create a cycle: new_parent -> ... -> widget -> new_parent
+        visited = set()
+        current_id: Optional[str] = widget_id
+        
+        while current_id:
+            if current_id == new_parent_id:
+                # Found that the widget is a descendant of the new parent
+                raise CanvusAPIError(
+                    f"Circular parenting detected: Setting {widget_id} as child of {new_parent_id} "
+                    f"would create a loop in the widget hierarchy. "
+                    "The system cannot handle circular parent-child relationships "
+                    "because it would cause infinite loops when calculating relative coordinates "
+                    "and break the rendering engine's ability to resolve widget positions."
+                )
+            
+            visited.add(current_id)
+            
+            # Get the current widget's parent
+            try:
+                widgets = await self.list_widgets(canvas_id)
+                current_widget = next((w for w in widgets if w.id == current_id), None)
+                if not current_widget:
+                    break
+                current_id = current_widget.parent_id
+            except Exception:
+                # If we can't get the widget info, assume no circular reference
+                break
+
+    def _calculate_parent_offset(
+        self, current_location: Dict[str, float], parent_location: Dict[str, float]
+    ) -> Dict[str, float]:
+        """Calculate the offset needed to maintain visual position when reparenting.
+
+        This implements the discovered formula: current_location - parent_location - 30
+        where 30 is the arbitrary offset for the 0,0 setting.
+
+        Args:
+            current_location (Dict[str, float]): Current widget position {"x": float, "y": float}
+            parent_location (Dict[str, float]): New parent position {"x": float, "y": float}
+
+        Returns:
+            Dict[str, float]: Calculated offset {"x": float, "y": float}
+        """
+        current_x = current_location.get("x", 0.0)
+        current_y = current_location.get("y", 0.0)
+        parent_x = parent_location.get("x", 0.0)
+        parent_y = parent_location.get("y", 0.0)
+
+        # Apply formula: current_location - parent_location - 30
+        offset_x = current_x - parent_x - 30
+        offset_y = current_y - parent_y - 30
+
+        return {"x": offset_x, "y": offset_y}
+
     def _build_url(self, endpoint: str) -> str:
         """Build the full URL for an API endpoint."""
         endpoint = endpoint.lstrip("/")
@@ -556,12 +639,43 @@ class CanvusClient:
     async def update_anchor(
         self, canvas_id: str, anchor_id: str, payload: JsonData
     ) -> Anchor:
-        """Update an existing anchor."""
+        """Update an existing anchor with circular parenting check and position offsetting."""
+        # Parse payload to ensure it's a dictionary
+        payload_dict = self._parse_payload(payload)
+
+        # Check for circular parenting if parent_id is being changed
+        if "parent_id" in payload_dict:
+            new_parent_id = payload_dict["parent_id"]
+            if new_parent_id:  # Only check if setting a real parent (not root)
+                await self._check_circular_parenting(
+                    canvas_id, anchor_id, new_parent_id
+                )
+
+                # Apply position offsetting to maintain visual position
+                try:
+                    # Get current anchor and new parent locations
+                    current_anchor = await self.get_anchor(canvas_id, anchor_id)
+                    parent_widget = await self.get_widget(canvas_id, new_parent_id)
+
+                    if current_anchor and parent_widget:
+                        # Calculate offset to maintain visual position
+                        offset = self._calculate_parent_offset(
+                            current_anchor.location, parent_widget.location
+                        )
+
+                        # Update the payload with the calculated offset
+                        payload_dict["location"] = offset
+
+                except Exception as e:
+                    # If we can't get widget info, proceed without offsetting
+                    # This maintains backward compatibility
+                    pass
+
         return await self._request(
             "PATCH",
             f"canvases/{canvas_id}/anchors/{anchor_id}",
             response_model=Anchor,
-            json_data=payload,
+            json_data=payload_dict,
         )
 
     async def delete_anchor(self, canvas_id: str, anchor_id: str) -> None:
@@ -586,7 +700,33 @@ class CanvusClient:
     async def update_note(
         self, canvas_id: str, note_id: str, payload: Dict[str, Any]
     ) -> Note:
-        """Update a note in a canvas."""
+        """Update a note in a canvas with circular parenting check and position offsetting."""
+        # Check for circular parenting if parent_id is being changed
+        if "parent_id" in payload:
+            new_parent_id = payload["parent_id"]
+            if new_parent_id:  # Only check if setting a real parent (not root)
+                await self._check_circular_parenting(canvas_id, note_id, new_parent_id)
+
+                # Apply position offsetting to maintain visual position
+                try:
+                    # Get current note and new parent locations
+                    current_note = await self.get_note(canvas_id, note_id)
+                    parent_widget = await self.get_widget(canvas_id, new_parent_id)
+
+                    if current_note and parent_widget:
+                        # Calculate offset to maintain visual position
+                        offset = self._calculate_parent_offset(
+                            current_note.location, parent_widget.location
+                        )
+
+                        # Update the payload with the calculated offset
+                        payload["location"] = offset
+
+                except Exception as e:
+                    # If we can't get widget info, proceed without offsetting
+                    # This maintains backward compatibility
+                    pass
+
         return await self._request(
             "PATCH",
             f"canvases/{canvas_id}/notes/{note_id}",
@@ -645,12 +785,41 @@ class CanvusClient:
     async def update_image(
         self, canvas_id: str, image_id: str, payload: JsonData
     ) -> Image:
-        """Update an existing image."""
+        """Update an existing image with circular parenting check and position offsetting."""
+        # Parse payload to ensure it's a dictionary
+        payload_dict = self._parse_payload(payload)
+
+        # Check for circular parenting if parent_id is being changed
+        if "parent_id" in payload_dict:
+            new_parent_id = payload_dict["parent_id"]
+            if new_parent_id:  # Only check if setting a real parent (not root)
+                await self._check_circular_parenting(canvas_id, image_id, new_parent_id)
+
+                # Apply position offsetting to maintain visual position
+                try:
+                    # Get current image and new parent locations
+                    current_image = await self.get_image(canvas_id, image_id)
+                    parent_widget = await self.get_widget(canvas_id, new_parent_id)
+
+                    if current_image and parent_widget:
+                        # Calculate offset to maintain visual position
+                        offset = self._calculate_parent_offset(
+                            current_image.location, parent_widget.location
+                        )
+
+                        # Update the payload with the calculated offset
+                        payload_dict["location"] = offset
+
+                except Exception as e:
+                    # If we can't get widget info, proceed without offsetting
+                    # This maintains backward compatibility
+                    pass
+
         return await self._request(
             "PATCH",
             f"canvases/{canvas_id}/images/{image_id}",
             response_model=Image,
-            json_data=payload,
+            json_data=payload_dict,
         )
 
     async def delete_image(self, canvas_id: str, image_id: str) -> None:
@@ -675,7 +844,35 @@ class CanvusClient:
     async def update_browser(
         self, canvas_id: str, browser_id: str, payload: Dict[str, Any]
     ) -> Browser:
-        """Update a browser in a canvas."""
+        """Update a browser in a canvas with circular parenting check and position offsetting."""
+        # Check for circular parenting if parent_id is being changed
+        if "parent_id" in payload:
+            new_parent_id = payload["parent_id"]
+            if new_parent_id:  # Only check if setting a real parent (not root)
+                await self._check_circular_parenting(
+                    canvas_id, browser_id, new_parent_id
+                )
+
+                # Apply position offsetting to maintain visual position
+                try:
+                    # Get current browser and new parent locations
+                    current_browser = await self.get_browser(canvas_id, browser_id)
+                    parent_widget = await self.get_widget(canvas_id, new_parent_id)
+
+                    if current_browser and parent_widget:
+                        # Calculate offset to maintain visual position
+                        offset = self._calculate_parent_offset(
+                            current_browser.location, parent_widget.location
+                        )
+
+                        # Update the payload with the calculated offset
+                        payload["location"] = offset
+
+                except Exception as e:
+                    # If we can't get widget info, proceed without offsetting
+                    # This maintains backward compatibility
+                    pass
+
         return await self._request(
             "PATCH",
             f"canvases/{canvas_id}/browsers/{browser_id}",
@@ -734,12 +931,41 @@ class CanvusClient:
     async def update_video(
         self, canvas_id: str, video_id: str, payload: JsonData
     ) -> Video:
-        """Update an existing video."""
+        """Update an existing video with circular parenting check and position offsetting."""
+        # Parse payload to ensure it's a dictionary
+        payload_dict = self._parse_payload(payload)
+
+        # Check for circular parenting if parent_id is being changed
+        if "parent_id" in payload_dict:
+            new_parent_id = payload_dict["parent_id"]
+            if new_parent_id:  # Only check if setting a real parent (not root)
+                await self._check_circular_parenting(canvas_id, video_id, new_parent_id)
+
+                # Apply position offsetting to maintain visual position
+                try:
+                    # Get current video and new parent locations
+                    current_video = await self.get_video(canvas_id, video_id)
+                    parent_widget = await self.get_widget(canvas_id, new_parent_id)
+
+                    if current_video and parent_widget:
+                        # Calculate offset to maintain visual position
+                        offset = self._calculate_parent_offset(
+                            current_video.location, parent_widget.location
+                        )
+
+                        # Update the payload with the calculated offset
+                        payload_dict["location"] = offset
+
+                except Exception as e:
+                    # If we can't get widget info, proceed without offsetting
+                    # This maintains backward compatibility
+                    pass
+
         return await self._request(
             "PATCH",
             f"canvases/{canvas_id}/videos/{video_id}",
             response_model=Video,
-            json_data=payload,
+            json_data=payload_dict,
         )
 
     async def delete_video(self, canvas_id: str, video_id: str) -> None:
@@ -849,12 +1075,41 @@ class CanvusClient:
             file_handle.close()
 
     async def update_pdf(self, canvas_id: str, pdf_id: str, payload: JsonData) -> PDF:
-        """Update an existing PDF."""
+        """Update an existing PDF with circular parenting check and position offsetting."""
+        # Parse payload to ensure it's a dictionary
+        payload_dict = self._parse_payload(payload)
+
+        # Check for circular parenting if parent_id is being changed
+        if "parent_id" in payload_dict:
+            new_parent_id = payload_dict["parent_id"]
+            if new_parent_id:  # Only check if setting a real parent (not root)
+                await self._check_circular_parenting(canvas_id, pdf_id, new_parent_id)
+
+                # Apply position offsetting to maintain visual position
+                try:
+                    # Get current PDF and new parent locations
+                    current_pdf = await self.get_pdf(canvas_id, pdf_id)
+                    parent_widget = await self.get_widget(canvas_id, new_parent_id)
+
+                    if current_pdf and parent_widget:
+                        # Calculate offset to maintain visual position
+                        offset = self._calculate_parent_offset(
+                            current_pdf.location, parent_widget.location
+                        )
+
+                        # Update the payload with the calculated offset
+                        payload_dict["location"] = offset
+
+                except Exception as e:
+                    # If we can't get widget info, proceed without offsetting
+                    # This maintains backward compatibility
+                    pass
+
         return await self._request(
             "PATCH",
             f"canvases/{canvas_id}/pdfs/{pdf_id}",
             response_model=PDF,
-            json_data=payload,
+            json_data=payload_dict,
         )
 
     async def delete_pdf(self, canvas_id: str, pdf_id: str) -> None:
@@ -970,7 +1225,7 @@ class CanvusClient:
     async def update_widget(
         self, canvas_id: str, widget_id: str, payload: Dict[str, Any]
     ) -> Widget:
-        """Update a widget in a canvas.
+        """Update a widget in a canvas with circular parenting check and position offsetting.
 
         Args:
             canvas_id (str): The ID of the canvas
@@ -988,8 +1243,36 @@ class CanvusClient:
             Widget: The updated widget
 
         Raises:
-            CanvusAPIError: If widget update fails
+            CanvusAPIError: If widget update fails or circular parenting detected
         """
+        # Check for circular parenting if parent_id is being changed
+        if "parent_id" in payload:
+            new_parent_id = payload["parent_id"]
+            if new_parent_id:  # Only check if setting a real parent (not root)
+                await self._check_circular_parenting(
+                    canvas_id, widget_id, new_parent_id
+                )
+
+                # Apply position offsetting to maintain visual position
+                try:
+                    # Get current widget and new parent locations
+                    current_widget = await self.get_widget(canvas_id, widget_id)
+                    parent_widget = await self.get_widget(canvas_id, new_parent_id)
+
+                    if current_widget and parent_widget:
+                        # Calculate offset to maintain visual position
+                        offset = self._calculate_parent_offset(
+                            current_widget.location, parent_widget.location
+                        )
+
+                        # Update the payload with the calculated offset
+                        payload["location"] = offset
+
+                except Exception as e:
+                    # If we can't get widget info, proceed without offsetting
+                    # This maintains backward compatibility
+                    pass
+
         return await self._request(
             "PATCH",
             f"canvases/{canvas_id}/widgets/{widget_id}",
@@ -1274,7 +1557,19 @@ class CanvusClient:
     async def update_connector(
         self, canvas_id: str, connector_id: str, payload: Dict[str, Any]
     ) -> Connector:
-        """Update a connector in a canvas."""
+        """Update a connector in a canvas with circular parenting check.
+
+        Note: Connectors don't have a location attribute like other widgets,
+        so position offsetting is not applied to connectors.
+        """
+        # Check for circular parenting if parent_id is being changed
+        if "parent_id" in payload:
+            new_parent_id = payload["parent_id"]
+            if new_parent_id:  # Only check if setting a real parent (not root)
+                await self._check_circular_parenting(
+                    canvas_id, connector_id, new_parent_id
+                )
+
         return await self._request(
             "PATCH",
             f"canvases/{canvas_id}/connectors/{connector_id}",
