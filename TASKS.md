@@ -770,7 +770,7 @@ You will not be able to test this as we don't have an infinite test key to valid
     7. Update documentation with geometry examples
 
 ### 19.3 Cross-Canvas Widget Search
-- [🔄] **Task 19.3.1**: Implement cross-canvas widget search functionality - Status: In Progress (Issue #107)
+- [✅] **Task 19.3.1**: Implement cross-canvas widget search functionality - Status: Completed (Issue #107)
   - **Features to implement**:
     - FindWidgetsAcrossCanvases() function
     - Support for complex queries with wildcards
@@ -785,7 +785,7 @@ You will not be able to test this as we don't have an infinite test key to valid
     6. Update documentation with search examples
 
 ### 19.4 Import/Export System
-- [ ] **Task 19.4.1**: Implement robust import/export functionality - Status: Not Started (Issue #105)
+- [🔄] **Task 19.4.1**: Implement robust import/export functionality - Status: In Progress (Issue #108)
   - **Features to implement**:
     - ExportWidgetsToFolder() with asset file handling
     - ImportWidgetsFromFolder() with spatial relationships
