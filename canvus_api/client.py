@@ -15,6 +15,7 @@ from typing import (
 )
 import json
 import os
+import asyncio
 from pydantic import BaseModel, ValidationError
 import aiohttp
 
@@ -36,7 +37,14 @@ from .models import (
     TokenResponse,
     Workspace,
 )
-from .exceptions import CanvusAPIError
+from .exceptions import (
+    CanvusAPIError,
+    AuthenticationError,
+    RateLimitError,
+    ResourceNotFoundError,
+    ServerError,
+    TimeoutError,
+)
 
 T = TypeVar("T", bound=BaseModel)
 JsonData = Union[Dict[str, Any], str]
@@ -45,17 +53,34 @@ JsonData = Union[Dict[str, Any], str]
 class CanvusClient:
     """Client for interacting with the Canvus API."""
 
-    def __init__(self, base_url: str, api_key: str, verify_ssl: bool = True):
+    def __init__(
+        self, 
+        base_url: str, 
+        api_key: str, 
+        verify_ssl: bool = True,
+        max_retries: int = 3,
+        retry_delay: float = 1.0,
+        retry_backoff: float = 2.0,
+        timeout: float = 30.0,
+    ):
         """Initialize the client.
 
         Args:
             base_url: The base URL of the Canvus server
             api_key: The API key for authentication
             verify_ssl: Whether to verify SSL certificates (default: True)
+            max_retries: Maximum number of retry attempts for transient errors (default: 3)
+            retry_delay: Initial delay between retries in seconds (default: 1.0)
+            retry_backoff: Multiplier for exponential backoff (default: 2.0)
+            timeout: Request timeout in seconds (default: 30.0)
         """
         self.base_url = base_url.rstrip("/")
         self.api_key = api_key
         self.verify_ssl = verify_ssl
+        self.max_retries = max_retries
+        self.retry_delay = retry_delay
+        self.retry_backoff = retry_backoff
+        self.timeout = timeout
         self.session: Optional[aiohttp.ClientSession] = None
 
     async def __aenter__(self) -> "CanvusClient":
@@ -161,6 +186,79 @@ class CanvusClient:
 
         return {"x": offset_x, "y": offset_y}
 
+    def _is_retryable_error(self, status_code: Optional[int], error_text: str) -> bool:
+        """Determine if an error is retryable.
+        
+        Args:
+            status_code: HTTP status code (can be None for connection errors)
+            error_text: Error response text
+            
+        Returns:
+            bool: True if the error is retryable
+        """
+        # Retry on connection errors (indicated by None status_code)
+        if status_code is None:
+            return True
+            
+        # Retry on 5xx server errors (except 501 Not Implemented)
+        if 500 <= status_code < 600 and status_code != 501:
+            return True
+            
+        # Retry on specific 4xx errors that might be transient
+        if status_code in [408, 429]:  # Request Timeout, Too Many Requests
+            return True
+            
+        return False
+
+    def _classify_error(self, status_code: Optional[int], error_text: str) -> CanvusAPIError:
+        """Classify an error based on status code and response.
+        
+        Args:
+            status_code: HTTP status code (can be None for connection errors)
+            error_text: Error response text
+            
+        Returns:
+            CanvusAPIError: Appropriate exception type
+        """
+        if status_code is None:
+            return TimeoutError(f"Connection failed: {error_text}", status_code, error_text)
+        elif status_code == 401:
+            return AuthenticationError(f"Authentication failed: {error_text}", status_code, error_text)
+        elif status_code == 404:
+            return ResourceNotFoundError(f"Resource not found: {error_text}", status_code, error_text)
+        elif status_code == 429:
+            return RateLimitError(f"Rate limit exceeded: {error_text}", status_code, error_text)
+        elif status_code == 408:
+            return TimeoutError(f"Request timeout: {error_text}", status_code, error_text)
+        elif 500 <= status_code < 600:
+            return ServerError(f"Server error ({status_code}): {error_text}", status_code, error_text)
+        else:
+            return CanvusAPIError(f"API error ({status_code}): {error_text}", status_code, error_text)
+
+    def _validate_response_against_request(
+        self, 
+        request_data: Optional[Dict[str, Any]], 
+        response_data: Optional[Dict[str, Any]]
+    ) -> None:
+        """Validate that response data is consistent with request data.
+        
+        Args:
+            request_data: The original request payload
+            response_data: The response data
+            
+        Raises:
+            ValidationError: If response validation fails
+        """
+        if not request_data or not response_data:
+            return
+            
+        # Check if response contains expected fields from request
+        for key, value in request_data.items():
+            if key in response_data and response_data[key] != value:
+                # Log the mismatch but don't raise error for now
+                # This could be enhanced with more sophisticated validation
+                print(f"Warning: Response value for '{key}' differs from request")
+
     def _build_url(self, endpoint: str) -> str:
         """Build the full URL for an API endpoint."""
         endpoint = endpoint.lstrip("/")
@@ -178,8 +276,36 @@ class CanvusClient:
         headers: Optional[Dict[str, Any]] = None,
         return_binary: bool = False,
         stream: bool = False,
+        max_retries: Optional[int] = None,
     ) -> Any:
-        """Make a request to the API."""
+        """Make a request to the API with retry logic and enhanced error handling.
+        
+        Args:
+            method: HTTP method
+            endpoint: API endpoint
+            response_model: Pydantic model for response validation
+            params: Query parameters
+            json_data: JSON payload
+            data: Form data
+            headers: Additional headers
+            return_binary: Whether to return binary data
+            stream: Whether to return streaming response
+            max_retries: Override default max retries
+            
+        Returns:
+            API response data
+            
+        Raises:
+            CanvusAPIError: For API errors
+            AuthenticationError: For authentication failures
+            RateLimitError: For rate limiting
+            ResourceNotFoundError: For 404 errors
+            ServerError: For 5xx errors
+            TimeoutError: For timeout errors
+        """
+        if max_retries is None:
+            max_retries = self.max_retries
+            
         url = self._build_url(endpoint)
         print(f"Making {method} request to {endpoint}")
         print(f"Full URL: {url}")
@@ -208,6 +334,7 @@ class CanvusClient:
             **request_headers,
             "Private-Token": self.api_key,  # Real token for request
         }
+        request_kwargs["timeout"] = aiohttp.ClientTimeout(total=self.timeout)
         print(f"Request headers: {dict(request_kwargs['headers'])}")
 
         # Create SSL context based on verify_ssl setting
@@ -220,59 +347,97 @@ class CanvusClient:
             ssl_context.verify_mode = ssl.CERT_NONE
             connector = aiohttp.TCPConnector(ssl=ssl_context)
 
-        async with aiohttp.ClientSession(connector=connector) as session:
-            async with session.request(method, url, **request_kwargs) as response:
-                status = response.status
-                print(f"Response status: {status}")
+        last_exception = None
+        delay = self.retry_delay
 
-                # Log response headers for debugging
-                print(f"Response headers: {dict(response.headers)}")
+        for attempt in range(max_retries + 1):
+            try:
+                async with aiohttp.ClientSession(connector=connector) as session:
+                    async with session.request(method, url, **request_kwargs) as response:
+                        status = response.status
+                        print(f"Response status: {status} (attempt {attempt + 1})")
 
-                if status not in range(200, 300):
-                    text = await response.text()
-                    print(f"Error response: {text}")
-                    print("Full error response details:")
-                    print(f"  Status: {status}")
-                    print(f"  Headers: {dict(response.headers)}")
-                    print(f"  Body: {text}")
-                    raise CanvusAPIError(text, status_code=status)
+                        # Log response headers for debugging
+                        print(f"Response headers: {dict(response.headers)}")
 
-                if return_binary:
-                    binary_data = await response.read()
-                    print(f"Binary response: {len(binary_data)} bytes")
-                    return binary_data
+                        if status not in range(200, 300):
+                            text = await response.text()
+                            print(f"Error response: {text}")
+                            print("Full error response details:")
+                            print(f"  Status: {status}")
+                            print(f"  Headers: {dict(response.headers)}")
+                            print(f"  Body: {text}")
+                            
+                            # Classify the error
+                            error = self._classify_error(status, text)
+                            
+                            # Check if error is retryable
+                            if attempt < max_retries and self._is_retryable_error(status, text):
+                                print(f"Retryable error detected, retrying in {delay:.2f}s...")
+                                last_exception = error
+                                await asyncio.sleep(delay)
+                                delay *= self.retry_backoff
+                                continue
+                            else:
+                                raise error
 
-                if stream:
-                    return response  # Return the response object for streaming
+                        if return_binary:
+                            binary_data = await response.read()
+                            print(f"Binary response: {len(binary_data)} bytes")
+                            return binary_data
 
-                text = await response.text()
-                if not text:
-                    data = None
-                    print("Empty response body")
-                else:
-                    try:
-                        data = json.loads(text)
-                        print(f"Full response data: {json.dumps(data, indent=2)}")
-                    except Exception as e:
-                        print(f"Raw response text: {text}")
-                        raise CanvusAPIError(
-                            f"Failed to decode JSON response: {str(e)}", status_code=500
-                        )
+                        if stream:
+                            return response  # Return the response object for streaming
 
-                if response_model is not None:
-                    try:
-                        if isinstance(data, list):
-                            return [
-                                response_model.model_validate(item) for item in data
-                            ]
+                        text = await response.text()
+                        if not text:
+                            data = None
+                            print("Empty response body")
                         else:
-                            return response_model.model_validate(data)
-                    except Exception as e:
-                        raise CanvusAPIError(
-                            f"Failed to validate response model: {str(e)}",
-                            status_code=500,
-                        )
-                return data
+                            try:
+                                data = json.loads(text)
+                                print(f"Full response data: {json.dumps(data, indent=2)}")
+                            except Exception as e:
+                                print(f"Raw response text: {text}")
+                                raise CanvusAPIError(
+                                    f"Failed to decode JSON response: {str(e)}", status_code=500
+                                )
+
+                        # Validate response against request
+                        if json_data and isinstance(json_data, dict):
+                            self._validate_response_against_request(json_data, data)
+
+                        if response_model is not None:
+                            try:
+                                if isinstance(data, list):
+                                    return [
+                                        response_model.model_validate(item) for item in data
+                                    ]
+                                else:
+                                    return response_model.model_validate(data)
+                            except Exception as e:
+                                raise CanvusAPIError(
+                                    f"Failed to validate response model: {str(e)}",
+                                    status_code=500,
+                                )
+                        return data
+
+            except (aiohttp.ClientError, asyncio.TimeoutError) as e:
+                # Handle connection and timeout errors
+                if attempt < max_retries:
+                    print(f"Connection error: {e}, retrying in {delay:.2f}s...")
+                    last_exception = TimeoutError(f"Connection failed: {str(e)}")
+                    await asyncio.sleep(delay)
+                    delay *= self.retry_backoff
+                    continue
+                else:
+                    raise TimeoutError(f"Connection failed after {max_retries + 1} attempts: {str(e)}")
+
+        # If we get here, all retries failed
+        if last_exception:
+            raise last_exception
+        else:
+            raise CanvusAPIError("Request failed for unknown reason")
 
     async def subscribe(
         self,
