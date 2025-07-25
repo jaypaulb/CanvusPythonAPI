@@ -308,6 +308,39 @@ async def test_workspace_operations(client: CanvusClient) -> None:
         raise
 
 
+@pytest.mark.asyncio
+async def test_open_canvas_method(client: CanvusClient):
+    """Test the open_canvas method of CanvusClient."""
+    print_header("Testing open_canvas method")
+
+    # Discover client and workspace
+    client_id = await test_client_discovery(client)
+    workspaces = await client.get_client_workspaces(client_id)
+    if not workspaces:
+        print_error("No workspaces found to test with")
+        return
+    workspace = workspaces[0]
+
+    # Create a test canvas
+    test_canvas_name = f"OpenCanvas Test {time.time()}"
+    test_canvas = await client.create_canvas({"name": test_canvas_name, "width": 1920, "height": 1080})
+    print_success(f"Created test canvas: {test_canvas.id}")
+
+    # Use open_canvas method
+    response = await client.open_canvas(
+        client_id=client_id,
+        workspace_index=workspace.index,
+        canvas_id=test_canvas.id,
+        server_id=workspace.server_id,
+    )
+    print_info(f"open_canvas response: {response}")
+
+    # Wait for workspace to update
+    opened = await wait_for_workspace_canvas(client, client_id, workspace.index, test_canvas.id)
+    assert opened, "Workspace did not open the test canvas via open_canvas method"
+    print_success("open_canvas method worked as expected")
+
+
 async def main():
     """Main test function."""
     print_header("Starting Client Operations Tests")
