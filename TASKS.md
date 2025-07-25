@@ -293,6 +293,20 @@ This document lists all remaining tasks to complete the Canvus Python API implem
     6. Add docstring following Google format
     7. Add unit test
 
+### 8.2 Workspace Operations
+- [🔄] **Task 8.2.1**: Implement open canvas in workspace method - Status: In Progress (Issue #114)
+  - **Endpoint**: `POST /clients/:client_id/workspaces/:workspace_index/open-canvas`
+  - **Method**: `open_canvas(client_id: str, workspace_index: int, canvas_id: str, server_id: str) -> Dict[str, Any]`
+  - **Implementation Steps**:
+    1. Add method to `CanvusClient` class
+    2. Use `_request` method with POST method
+    3. Accept client_id, workspace_index, canvas_id, and server_id parameters
+    4. Pass payload `{ "canvas_id": canvas_id, "server_id": server_id }`
+    5. Return response as dictionary
+    6. Add proper error handling and validation
+    7. Add docstring following Google format
+    8. Add unit test
+
 ---
 
 ## 9. Video Inputs & Outputs - Missing Endpoints
