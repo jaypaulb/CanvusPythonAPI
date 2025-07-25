@@ -1,4 +1,3 @@
-```markdown
 ## Workspaces API
 
 The workspaces API operates on the workspaces on a client.
@@ -186,3 +185,38 @@ curl -X PATCH -H "Private-Token: <access token>" -d '{"pinned":"false"}' https:/
   "workspace_state": "open"
 }
 ```
+
+### Open Canvas in Workspace
+
+Opens a canvas in a workspace. This is the correct way to open a canvas, not PATCH.
+
+```bash
+POST /clients/:client_id/workspaces/:workspace_index/open-canvas
+```
+
+| Attribute         | Type   | Required | Description                |
+|------------------|--------|----------|----------------------------|
+| client_id (path)  | uuid   | yes      | ID of the client           |
+| workspace_index   | int    | yes      | Index of the workspace     |
+| canvas_id (body)  | uuid   | yes      | ID of the canvas to open   |
+| server_id (body)  | uuid   | yes      | Server ID for the workspace|
+
+**Example cURL Request**:
+```bash
+curl -X POST -H "Private-Token: <access token>" \
+  -d '{"canvas_id": "abc123", "server_id": "srv456"}' \
+  https://canvus.example.com/api/v1/clients/e5cad8d4-7051-4051-97bc-13e41fd81ca7/workspaces/0/open-canvas
+```
+
+**Example SDK Usage**:
+```python
+await client.open_canvas(
+    client_id="abc123",
+    workspace_index=0,
+    canvas_id="canvas-xyz",
+    server_id="server-xyz"
+)
+```
+
+**Response**:
+Returns a dictionary with the result of the operation.

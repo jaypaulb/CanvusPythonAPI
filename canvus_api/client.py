@@ -2947,3 +2947,44 @@ class CanvusClient:
         finally:
             # Ensure response is closed
             await response.release()
+
+    async def open_canvas(
+        self,
+        client_id: str,
+        workspace_index: int,
+        canvas_id: str,
+        server_id: str,
+    ) -> Dict[str, Any]:
+        """Open a canvas in a workspace.
+
+        Args:
+            client_id (str): The client ID.
+            workspace_index (int): The workspace index.
+            canvas_id (str): The canvas ID to open.
+            server_id (str): The server ID for the workspace.
+
+        Returns:
+            Dict[str, Any]: The response from the API.
+
+        Raises:
+            ValidationError: If required parameters are missing or invalid.
+            AuthenticationError: If authentication fails.
+            CanvusAPIError: For other API-related errors.
+
+        Example:
+            >>> await client.open_canvas(
+            ...     client_id="abc123",
+            ...     workspace_index=0,
+            ...     canvas_id="canvas-xyz",
+            ...     server_id="server-xyz"
+            ... )
+        """
+        if not client_id or not isinstance(workspace_index, int) or not canvas_id or not server_id:
+            raise ValidationError("All parameters are required and must be valid.")
+        endpoint = f"clients/{client_id}/workspaces/{workspace_index}/open-canvas"
+        payload = {"canvas_id": canvas_id, "server_id": server_id}
+        return await self._request(
+            "POST",
+            endpoint,
+            json_data=payload,
+        )
